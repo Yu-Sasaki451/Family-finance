@@ -1,0 +1,36 @@
+.storeForm {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+
+.storeInput {
+    width: 300px;
+    height: 44px;
+    font-size: 22px;
+    padding: 0 8px;
+    border: 2px solid gray;
+    border-radius: 8px;
+}
+
+.storeButton {
+    padding: 0 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: darkgray;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+@media (max-width: 700px) {
+    .storeForm {
+        gap: 10px;
+    }
+
+    .storeInput {
+        width: 100%;
+        min-width: 0;
+        font-size: 16px;
+    }
+}

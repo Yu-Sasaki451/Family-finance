@@ -1,0 +1,340 @@
+.indexContainer {
+    width: min(1100px, calc(100% - 32px));
+    margin: 60px auto;
+}
+
+.indexTitle {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.indexError,
+.indexMessage,
+.noExpenses {
+    text-align: center;
+}
+
+.indexMessage {
+    color: green;
+}
+
+.indexError {
+    color: #ef4444;
+}
+
+.monthSummaryGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.monthSummaryCard {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px;
+    border: 2px solid gray;
+    border-radius: 8px;
+    background-color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.monthSummaryCard strong {
+    font-size: 24px;
+}
+
+.monthSummaryCard small {
+    color: #555;
+}
+
+.selectedMonth {
+    border-color: rgb(128, 207, 10);
+    background-color: #f6ffe8;
+}
+
+.monthlyDetails {
+    margin-top: 45px;
+}
+
+.monthlyDetails h2 {
+    margin-bottom: 20px;
+}
+
+.settlementBox {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 2px solid gray;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.settlementBox h3 {
+    margin: 0 0 8px;
+    text-align: center;
+}
+
+.settlementDescription {
+    margin: 0 0 18px;
+    color: #555;
+    text-align: center;
+}
+
+.settlementUsers {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.settlementUser {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 15px;
+    border: 1px solid lightgray;
+    border-radius: 5px;
+}
+
+.transferResult {
+    margin: 0 0 20px;
+    padding: 16px;
+    border-radius: 5px;
+    background-color: #f6ffe8;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.settlementError {
+    color: #ef4444;
+    text-align: center;
+}
+
+.monthlyDetailsTable {
+    width: 100%;
+    border: 2px solid gray;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white;
+}
+
+.monthlyDetailsTable th,
+.monthlyDetailsTable td {
+    padding: 10px;
+    border-bottom: 1px solid gray;
+    text-align: center;
+}
+
+.monthlyDetailsTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.expenseActions {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+
+.expenseActions button,
+.editExpenseButtons button {
+    padding: 7px 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #666;
+    color: white;
+    cursor: pointer;
+}
+
+.expenseActions .deleteExpenseButton {
+    background-color: #dc2626;
+}
+
+.editExpenseRow td {
+    padding: 20px;
+    background-color: #f7f7f7;
+}
+
+.editExpenseForm {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    text-align: left;
+}
+
+.editExpenseForm h3,
+.editExpenseForm fieldset,
+.editExpenseButtons {
+    grid-column: 1 / -1;
+}
+
+.editExpenseForm h3 {
+    margin: 0;
+}
+
+.editExpenseForm label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: bold;
+}
+
+.editExpenseForm input,
+.editExpenseForm select {
+    min-width: 0;
+    padding: 9px;
+    border: 1px solid gray;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.editExpenseForm fieldset {
+    padding: 14px;
+    border: 1px solid gray;
+    border-radius: 5px;
+}
+
+.editPersonalExpense {
+    display: grid;
+    grid-template-columns: 60px 160px 1fr;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.editExpenseButtons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+@media (max-width: 900px) {
+    .monthSummaryGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .indexContainer {
+        width: calc(100% - 24px);
+        margin: 28px auto;
+    }
+
+    .indexTitle {
+        margin-bottom: 20px;
+        font-size: 26px;
+    }
+
+    .monthSummaryGrid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .monthSummaryCard {
+        gap: 6px;
+        padding: 16px;
+    }
+
+    .monthlyDetails {
+        margin-top: 30px;
+    }
+
+    .monthlyDetails h2 {
+        font-size: 21px;
+    }
+
+    .settlementBox {
+        padding: 16px;
+    }
+
+    .settlementUsers {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .transferResult {
+        font-size: 17px;
+        line-height: 1.6;
+    }
+
+    .monthlyDetailsTable,
+    .monthlyDetailsTable tbody,
+    .monthlyDetailsTable tr,
+    .monthlyDetailsTable td {
+        display: block;
+        width: 100%;
+    }
+
+    .monthlyDetailsTable {
+        border: none;
+        border-radius: 0;
+        background-color: transparent;
+    }
+
+    .monthlyDetailsTable thead {
+        display: none;
+    }
+
+    .monthlyDetailsTable tr {
+        margin-bottom: 16px;
+        padding: 6px 14px;
+        border: 2px solid gray;
+        border-radius: 8px;
+        background-color: white;
+    }
+
+    .monthlyDetailsTable td,
+    .monthlyDetailsTable tbody tr:last-child td {
+        display: grid;
+        grid-template-columns: 88px minmax(0, 1fr);
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid #ddd;
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+
+    .monthlyDetailsTable td:last-child,
+    .monthlyDetailsTable tbody tr:last-child td:last-child {
+        border-bottom: none;
+    }
+
+    .monthlyDetailsTable td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        text-align: left;
+    }
+
+    .expenseActions {
+        justify-content: flex-end;
+    }
+
+    .editExpenseRow td {
+        display: block;
+        padding: 14px 0;
+    }
+
+    .editExpenseRow td::before {
+        content: none;
+    }
+
+    .editExpenseForm {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        text-align: left;
+    }
+
+    .editPersonalExpense {
+        grid-template-columns: 1fr;
+    }
+
+    .editExpenseForm input,
+    .editExpenseForm select {
+        min-height: 46px;
+    }
+
+    .editExpenseButtons button {
+        flex: 1;
+        min-height: 46px;
+    }
+}

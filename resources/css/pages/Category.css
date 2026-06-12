@@ -1,0 +1,62 @@
+.categoryContainer {
+    width: min(600px, calc(100% - 32px));
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 80px;
+}
+
+.categoryTable {
+    width: 90%;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 100px;
+    border: 2px solid gray;
+    background-color: white;
+}
+
+.categoryTable th,
+.categoryTable tr:not(:last-child) td {
+    border-bottom: 1px solid gray;
+}
+
+.categoryTable th,
+.categoryTable td {
+    text-align: center;
+    padding: 4px;
+}
+
+.nameCol {
+    width: 70%;
+}
+
+.categoryNameInput {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid gray;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.categoryError {
+    margin: 20px 0 0;
+    color: #ef4444;
+}
+
+@media (max-width: 700px) {
+    .categoryContainer {
+        width: calc(100% - 24px);
+        margin-top: 32px;
+    }
+
+    .categoryTable {
+        width: 100%;
+        margin-top: 40px;
+    }
+
+    .nameCol {
+        width: auto;
+    }
+}

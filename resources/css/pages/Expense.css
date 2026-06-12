@@ -1,0 +1,275 @@
+.expenseContainer {
+    width: min(620px, calc(100% - 32px));
+    margin: 48px auto;
+}
+
+.expenseTitle {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.expenseMessage,
+.expenseError {
+    margin: 0 0 15px;
+    text-align: center;
+}
+
+.expenseMessage {
+    color: green;
+}
+
+.expenseError {
+    color: #ef4444;
+}
+
+.expenseForm {
+    padding: 35px 45px;
+    border: 2px solid gray;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.expenseFormGroup {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.expenseFormGroup label {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.expenseFormGroup input,
+.expenseFormGroup select,
+.expenseFormGroup textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid gray;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.expenseFormGroup textarea {
+    resize: vertical;
+}
+
+.expenseDateField {
+    min-width: 0;
+}
+
+.personalExpenseFieldset {
+    margin: 5px 0 24px;
+    padding: 20px;
+    border: 1px solid gray;
+    border-radius: 5px;
+}
+
+.personalExpenseFieldset legend {
+    padding: 0 8px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.personalExpenseDescription {
+    margin: 0 0 18px;
+    color: #555;
+}
+
+.personalExpenseRow {
+    display: grid;
+    grid-template-columns: 35px 180px 1fr;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.personalExpenseRow input {
+    width: 100%;
+    padding: 9px;
+    border: 1px solid gray;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.personalExpenseName {
+    font-weight: bold;
+}
+
+.personalAmountInputs {
+    display: grid;
+    gap: 8px;
+}
+
+.sharedAmount {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid lightgray;
+}
+
+.netAmount {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin: -10px 0 24px;
+    padding: 12px;
+    border-radius: 5px;
+    background-color: #f6ffe8;
+}
+
+.expenseAmount {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.expenseAmount input {
+    text-align: right;
+}
+
+.expenseStoreButton {
+    display: block;
+    margin: 10px auto 0;
+    padding: 10px 40px;
+    border: none;
+    border-radius: 5px;
+    background-color: darkgray;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+@media (max-width: 700px) {
+    .expenseContainer {
+        width: 100%;
+        margin: 0 auto 28px;
+    }
+
+    .expenseTitle {
+        margin: 0;
+        padding: 28px 16px 20px;
+        font-size: 25px;
+    }
+
+    .expenseForm {
+        padding: 20px 16px 24px;
+        border: none;
+        border-top: 1px solid #e4d7c8;
+        border-radius: 0;
+    }
+
+    .expenseFormGroup {
+        grid-template-columns: 1fr;
+        gap: 7px;
+        margin-bottom: 20px;
+        min-width: 0;
+    }
+
+    .expenseFormGroup label,
+    .personalExpenseFieldset legend {
+        font-size: 16px;
+    }
+
+    .expenseFormGroup input,
+    .expenseFormGroup select,
+    .expenseFormGroup textarea,
+    .personalExpenseRow input {
+        min-width: 0;
+        max-width: 100%;
+        min-height: 48px;
+        padding: 11px 12px;
+        border-color: #aaa;
+        border-radius: 8px;
+    }
+
+    .expenseFormGroup input[type="date"] {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    .expenseDateField {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+        border-radius: 8px;
+    }
+
+    .expenseFormGroup input[type="date"]::-webkit-date-and-time-value {
+        min-width: 0;
+        text-align: left;
+    }
+
+    .personalExpenseFieldset {
+        margin: 8px 0 22px;
+        padding: 16px;
+        border: none;
+        border-radius: 10px;
+        background-color: #f7f7f7;
+    }
+
+    .personalExpenseFieldset legend {
+        padding: 0;
+    }
+
+    .personalExpenseDescription {
+        margin-bottom: 16px;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .personalExpenseRow {
+        grid-template-columns: 1fr;
+        gap: 9px;
+        margin: 0;
+        padding: 16px 0;
+        border-top: 1px solid #ddd;
+    }
+
+    .personalExpenseName {
+        font-size: 17px;
+    }
+
+    .personalExpenseRow .expenseAmount {
+        width: 100%;
+    }
+
+    .personalExpenseRow .expenseAmount input {
+        min-width: 0;
+    }
+
+    .personalExpenseRow > input {
+        grid-column: auto;
+    }
+
+    .sharedAmount,
+    .netAmount {
+        justify-content: space-between;
+    }
+
+    .sharedAmount {
+        margin-top: 4px;
+        padding-top: 16px;
+    }
+
+    .netAmount {
+        margin: -6px 0 20px;
+    }
+
+    .expenseStoreButton {
+        width: 100%;
+        min-height: 50px;
+        margin-top: 4px;
+        padding: 12px;
+        border-radius: 8px;
+    }
+}

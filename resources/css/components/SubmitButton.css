@@ -1,0 +1,23 @@
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.submitButton {
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-size: 14px;
+    color: white;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.updateButton {
+    background: rgb(128, 207, 10);
+}
+
+.deleteButton {
+    background: #ef4444;
+}
