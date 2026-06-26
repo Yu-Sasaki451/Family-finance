@@ -1,15 +1,20 @@
 .header {
-    height: 80px;
     background-color: black;
 }
 
 .headerFlex {
     width: min(1100px, calc(100% - 40px));
-    height: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: grid;
+    gap: 12px;
     margin: 0 auto;
+    padding: 14px 0 16px;
+}
+
+.headerTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
 }
 
 .headerLink {
@@ -17,59 +22,118 @@
     color: antiquewhite;
 }
 
-.headerNavRight {
-    width: 100%;
-    display: flex;
-    gap: 40px;
+.linkIndex {
+    font-size: 42px;
+    font-weight: bold;
+    line-height: 1;
 }
 
-.linkIndex {
-    font-size: 48px;
-    font-weight: bold;
+.headerPageLinks {
+    display: flex;
+    gap: 12px;
 }
 
 .navRightLink {
-    font-size: 26px;
+    min-width: 120px;
+    padding: 10px 16px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(250, 235, 215, 0.45);
+    border-radius: 6px;
+    font-size: 18px;
+}
+
+.headerAccount {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.headerUserName {
+    color: antiquewhite;
+    font-size: 16px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.headerLogoutButton {
+    padding: 8px 12px;
+    border: 1px solid antiquewhite;
+    border-radius: 6px;
+    background: transparent;
+    color: antiquewhite;
+    font-size: 14px;
+    cursor: pointer;
 }
 
 @media (max-width: 700px) {
-    .header {
-        height: auto;
-    }
-
     .headerFlex {
         width: 100%;
-        min-height: 64px;
-        padding: 0 16px;
-        gap: 20px;
+        padding: 10px 16px;
+        gap: 10px;
+    }
+
+    .headerTop {
+        gap: 12px;
     }
 
     .linkIndex {
-        font-size: 28px;
+        font-size: 26px;
         white-space: nowrap;
     }
 
-    .headerNavRight {
-        gap: 18px;
+    .headerPageLinks {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
     }
 
     .navRightLink {
-        font-size: 15px;
+        display: grid;
+        min-height: 36px;
+        min-width: 0;
+        padding: 8px 10px;
+        place-items: center;
+        border: 1px solid rgba(250, 235, 215, 0.45);
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .headerLogoutButton {
+        padding: 6px 9px;
         white-space: nowrap;
+        font-size: 12px;
+    }
+
+    .headerUserName {
+        max-width: 64px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 12px;
     }
 }
 
 @media (max-width: 390px) {
     .headerFlex {
-        padding: 0 12px;
-        gap: 14px;
+        padding: 10px 10px;
+        gap: 8px;
     }
 
-    .headerNavRight {
-        gap: 12px;
+    .linkIndex {
+        font-size: 23px;
     }
 
     .navRightLink {
-        font-size: 14px;
+        min-height: 34px;
+        font-size: 13px;
+    }
+
+    .headerUserName {
+        max-width: 48px;
+    }
+
+    .headerLogoutButton {
+        padding: 6px 8px;
+        font-size: 11px;
     }
 }

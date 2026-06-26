@@ -1,0 +1,85 @@
+.authContainer {
+    width: min(480px, calc(100% - 32px));
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    margin: 0 auto;
+}
+
+.authForm {
+    width: 100%;
+    display: grid;
+    gap: 18px;
+    padding: 28px;
+    background: #fff;
+    border: 1px solid #e0d6c8;
+    border-radius: 8px;
+}
+
+.authForm h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.authForm label {
+    display: grid;
+    gap: 8px;
+    font-weight: 700;
+}
+
+.authForm input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #cdbfae;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.authForm .authCheckboxLabel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+}
+
+.authCheckboxLabel input {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+}
+
+.authForm button {
+    padding: 12px;
+    border: 0;
+    border-radius: 6px;
+    background: #111;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.authForm p {
+    margin: 0;
+}
+
+.authForm a {
+    margin-left: 6px;
+    color: #0066cc;
+}
+
+.authError,
+.authMessage {
+    padding: 12px;
+    border-radius: 6px;
+}
+
+.authError {
+    background: #fff0f0;
+    color: #b00020;
+}
+
+.authMessage {
+    background: #eef7ff;
+    color: #004c7a;
+}

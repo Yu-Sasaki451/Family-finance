@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Category;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class ExpenseRequest extends FormRequest
@@ -15,15 +16,20 @@ class ExpenseRequest extends FormRequest
 
     public function rules(): array
     {
+        $family = $this->user()->currentFamily();
+        $familyUserIds = $family
+            ? $family->users()->pluck('users.id')->all()
+            : [];
+
         return [
-            'user_id' => ['required', 'exists:users,id'],
+            'user_id' => ['required', Rule::in($familyUserIds)],
             'category_id' => ['required', 'exists:categories,id'],
             'amount' => ['required', 'integer', 'min:1'],
             'income' => ['nullable', 'integer', 'min:0'],
             'spent_at' => ['required', 'date'],
             'note' => ['nullable', 'string', 'max:255'],
             'personal_expenses' => ['nullable', 'array'],
-            'personal_expenses.*.user_id' => ['required', 'distinct', 'exists:users,id'],
+            'personal_expenses.*.user_id' => ['required', 'distinct', Rule::in($familyUserIds)],
             'personal_expenses.*.amount' => ['nullable', 'integer', 'min:0'],
             'personal_expenses.*.note' => ['nullable', 'string', 'max:255'],
         ];

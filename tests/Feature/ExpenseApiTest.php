@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Expense;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,8 +13,7 @@ class ExpenseApiTest extends TestCase
 
     public function test_expense_and_personal_expenses_can_be_stored(): void
     {
-        $husband = User::create(['name' => '夫']);
-        $wife = User::create(['name' => '妻']);
+        [$family, $husband, $wife] = $this->createFamilyUsers();
         $category = Category::create(['name' => '食費']);
 
         $response = $this->postJson('/api/expenses', [
@@ -47,8 +45,7 @@ class ExpenseApiTest extends TestCase
 
     public function test_personal_expense_total_cannot_exceed_expense_amount(): void
     {
-        $husband = User::create(['name' => '夫']);
-        $wife = User::create(['name' => '妻']);
+        [$family, $husband, $wife] = $this->createFamilyUsers();
         $category = Category::create(['name' => '食費']);
 
         $this->postJson('/api/expenses', [
@@ -66,7 +63,7 @@ class ExpenseApiTest extends TestCase
 
     public function test_electricity_expense_can_be_stored_with_solar_income(): void
     {
-        $husband = User::create(['name' => '夫']);
+        [$family, $husband] = $this->createFamilyUsers(['夫']);
         $electricity = Category::create(['name' => '電気代']);
 
         $this->postJson('/api/expenses', [
@@ -87,7 +84,7 @@ class ExpenseApiTest extends TestCase
 
     public function test_solar_income_cannot_be_stored_for_other_categories(): void
     {
-        $husband = User::create(['name' => '夫']);
+        [$family, $husband] = $this->createFamilyUsers(['夫']);
         $food = Category::create(['name' => '食費']);
 
         $this->postJson('/api/expenses', [
@@ -102,11 +99,11 @@ class ExpenseApiTest extends TestCase
 
     public function test_expense_and_personal_expenses_can_be_updated(): void
     {
-        $husband = User::create(['name' => '夫']);
-        $wife = User::create(['name' => '妻']);
+        [$family, $husband, $wife] = $this->createFamilyUsers();
         $food = Category::create(['name' => '食費']);
         $dailyGoods = Category::create(['name' => '日用品']);
         $expense = Expense::create([
+            'family_id' => $family->id,
             'user_id' => $husband->id,
             'category_id' => $food->id,
             'amount' => 3000,
@@ -150,9 +147,10 @@ class ExpenseApiTest extends TestCase
 
     public function test_expense_and_personal_expenses_can_be_deleted(): void
     {
-        $user = User::create(['name' => '夫']);
+        [$family, $user] = $this->createFamilyUsers(['夫']);
         $category = Category::create(['name' => '食費']);
         $expense = Expense::create([
+            'family_id' => $family->id,
             'user_id' => $user->id,
             'category_id' => $category->id,
             'amount' => 3000,

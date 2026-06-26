@@ -6,19 +6,23 @@ use App\Http\Requests\ExpenseRequest;
 use App\Http\Requests\MonthlyExpenseRequest;
 use App\Models\Category;
 use App\Models\Expense;
-use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ExpenseController extends Controller
 {
     public function monthly(MonthlyExpenseRequest $request)
     {
-        $users = User::orderBy('id')->get(['id', 'name']);
+        $family = $request->user()->currentFamily();
+        $users = $family->users()->orderBy('users.id')->get(['users.id', 'users.name']);
         $expenses = Expense::with([
             'user:id,name',
             'category.ratios',
             'personal_expenses.user:id,name',
-        ])->orderByDesc('spent_at')->get();
+        ])->where('family_id', $family->id)
+            ->orderByDesc('spent_at')
+            ->get();
 
         $months = $expenses->groupBy(fn ($expense) => substr($expense->spent_at, 0, 7))
             ->map(fn ($items, $month) => [
@@ -101,9 +105,11 @@ class ExpenseController extends Controller
         $burdens = $users->mapWithKeys(fn ($user) => [$user->id => 0])->all();
 
         foreach ($expenses as $expense) {
-            $ratios = $expense->category->ratios->keyBy('user_id');
+            $ratios = $expense->category->ratios
+                ->where('family_id', $expense->family_id)
+                ->keyBy('user_id');
 
-            if ($users->contains(fn ($user) => !$ratios->has($user->id))) {
+            if ($users->contains(fn ($user) => ! $ratios->has($user->id))) {
                 return [
                     'error' => "カテゴリ「{$expense->category->name}」の割合が未設定です。",
                     'users' => [],
@@ -162,10 +168,12 @@ class ExpenseController extends Controller
         ];
     }
 
-    public function options()
+    public function options(Request $request)
     {
+        $family = $request->user()->currentFamily();
+
         return [
-            'users' => User::orderBy('id')->get(['id', 'name']),
+            'users' => $family->users()->orderBy('users.id')->get(['users.id', 'users.name']),
             'categories' => Category::orderBy('id')->get(['id', 'name'])
                 ->map(fn ($category) => [
                     'id' => $category->id,
@@ -178,9 +186,16 @@ class ExpenseController extends Controller
     public function store(ExpenseRequest $request)
     {
         $data = $request->validated();
+        $family = $request->user()->currentFamily();
 
-        $expense = DB::transaction(function () use ($data) {
+        $this->ensureFamilyUsers($family, collect($data['personal_expenses'] ?? [])
+            ->pluck('user_id')
+            ->push($data['user_id'])
+            ->all());
+
+        $expense = DB::transaction(function () use ($data, $family) {
             $expense = Expense::create([
+                'family_id' => $family->id,
                 'user_id' => $data['user_id'],
                 'category_id' => $data['category_id'],
                 'amount' => $data['amount'],
@@ -209,6 +224,13 @@ class ExpenseController extends Controller
     public function update(ExpenseRequest $request, Expense $expense)
     {
         $data = $request->validated();
+        $family = $request->user()->currentFamily();
+
+        $this->ensureFamilyExpense($family->id, $expense);
+        $this->ensureFamilyUsers($family, collect($data['personal_expenses'] ?? [])
+            ->pluck('user_id')
+            ->push($data['user_id'])
+            ->all());
 
         DB::transaction(function () use ($data, $expense) {
             $expense->update([
@@ -236,13 +258,35 @@ class ExpenseController extends Controller
         return $expense->load('personal_expenses');
     }
 
-    public function destroy(Expense $expense)
+    public function destroy(Request $request, Expense $expense)
     {
+        $family = $request->user()->currentFamily();
+
+        $this->ensureFamilyExpense($family->id, $expense);
+
         DB::transaction(function () use ($expense) {
             $expense->personal_expenses()->delete();
             $expense->delete();
         });
 
         return response()->noContent();
+    }
+
+    private function ensureFamilyExpense(int $familyId, Expense $expense): void
+    {
+        if ((int) $expense->family_id !== $familyId) {
+            abort(404);
+        }
+    }
+
+    private function ensureFamilyUsers($family, array $userIds): void
+    {
+        $familyUserIds = $family->users()->pluck('users.id')->all();
+
+        if (collect($userIds)->filter()->diff($familyUserIds)->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'user_id' => 'グループのメンバーを選択してください。',
+            ]);
+        }
     }
 }

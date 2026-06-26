@@ -11,14 +11,17 @@ class RatioController extends Controller
 {
     public function index()
     {
-        $users = User::orderBy('id')->get(['id', 'name']);
+        $family = request()->user()->currentFamily();
+        $users = $family->users()->orderBy('users.id')->get(['users.id', 'users.name']);
         $categories = Category::with('ratios')->orderBy('id')->get()
-            ->map(function (Category $category) use ($users) {
+            ->map(function (Category $category) use ($users, $family) {
                 return [
                     'id' => $category->id,
                     'name' => $category->name,
-                    'ratios' => $users->map(function (User $user) use ($category) {
-                        $ratio = $category->ratios->firstWhere('user_id', $user->id);
+                    'ratios' => $users->map(function (User $user) use ($category, $family) {
+                        $ratio = $category->ratios
+                            ->where('family_id', $family->id)
+                            ->firstWhere('user_id', $user->id);
 
                         return [
                             'user_id' => $user->id,
@@ -33,9 +36,12 @@ class RatioController extends Controller
 
     public function update(RatioRequest $request, Category $category)
     {
+        $family = $request->user()->currentFamily();
+
         foreach ($request->validated('ratios') as $ratio) {
             Ratio::updateOrCreate(
                 [
+                    'family_id' => $family->id,
                     'user_id' => $ratio['user_id'],
                     'category_id' => $category->id,
                 ],

@@ -12,6 +12,7 @@ class CategoryApiTest extends TestCase
 
     public function test_category_can_be_displayed_added_updated_and_deleted(): void
     {
+        $this->createFamilyUsers(['夫']);
         $category = Category::create(['name' => '食費']);
 
         $this->getJson('/api/categories')
@@ -36,6 +37,8 @@ class CategoryApiTest extends TestCase
 
     public function test_category_name_is_required(): void
     {
+        $this->createFamilyUsers(['夫']);
+
         $this->postJson('/api/categories', ['name' => ''])
             ->assertUnprocessable()
             ->assertJsonValidationErrors('name');

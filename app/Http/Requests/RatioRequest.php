@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class RatioRequest extends FormRequest
@@ -15,9 +15,14 @@ class RatioRequest extends FormRequest
 
     public function rules(): array
     {
+        $family = $this->user()->currentFamily();
+        $familyUserIds = $family
+            ? $family->users()->pluck('users.id')->all()
+            : [];
+
         return [
-            'ratios' => ['required', 'array', 'size:' . User::count()],
-            'ratios.*.user_id' => ['required', 'integer', 'distinct', 'exists:users,id'],
+            'ratios' => ['required', 'array', 'size:'.count($familyUserIds)],
+            'ratios.*.user_id' => ['required', 'integer', 'distinct', Rule::in($familyUserIds)],
             'ratios.*.ratio' => ['required', 'numeric', 'between:0,100'],
         ];
     }

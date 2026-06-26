@@ -17,6 +17,9 @@ const Setting = () => {
                     <Link className="settingMenuLink" to={ROUTES.RATIO}>
                         割合設定
                     </Link>
+                    <Link className="settingMenuLink" to={ROUTES.FAMILY}>
+                        グループ
+                    </Link>
                 </div>
             </main>
         </>

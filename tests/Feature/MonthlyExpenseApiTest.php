@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Ratio;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,10 +14,11 @@ class MonthlyExpenseApiTest extends TestCase
 
     public function test_only_monthly_summaries_are_displayed_before_selecting_month(): void
     {
-        $user = User::create(['name' => '夫']);
+        [$family, $user] = $this->createFamilyUsers(['夫']);
         $category = Category::create(['name' => '食費']);
 
         Expense::create([
+            'family_id' => $family->id,
             'user_id' => $user->id,
             'category_id' => $category->id,
             'amount' => 2000,
@@ -40,11 +40,12 @@ class MonthlyExpenseApiTest extends TestCase
 
     public function test_selected_month_expenses_are_summarized_by_category(): void
     {
-        $user = User::create(['name' => '夫']);
+        [$family, $user] = $this->createFamilyUsers(['夫']);
         $food = Category::create(['name' => '食費']);
         $rent = Category::create(['name' => '家賃']);
 
         Expense::create([
+            'family_id' => $family->id,
             'user_id' => $user->id,
             'category_id' => $food->id,
             'amount' => 2000,
@@ -52,6 +53,7 @@ class MonthlyExpenseApiTest extends TestCase
             'note' => null,
         ]);
         Expense::create([
+            'family_id' => $family->id,
             'user_id' => $user->id,
             'category_id' => $food->id,
             'amount' => 3000,
@@ -59,6 +61,7 @@ class MonthlyExpenseApiTest extends TestCase
             'note' => null,
         ]);
         Expense::create([
+            'family_id' => $family->id,
             'user_id' => $user->id,
             'category_id' => $rent->id,
             'amount' => 80000,
@@ -66,6 +69,7 @@ class MonthlyExpenseApiTest extends TestCase
             'note' => null,
         ]);
         Expense::create([
+            'family_id' => $family->id,
             'user_id' => $user->id,
             'category_id' => $food->id,
             'amount' => 1000,
@@ -84,21 +88,23 @@ class MonthlyExpenseApiTest extends TestCase
 
     public function test_selected_month_details_are_displayed(): void
     {
-        $user = User::create(['name' => '夫']);
-        $wife = User::create(['name' => '妻']);
+        [$family, $user, $wife] = $this->createFamilyUsers();
         $category = Category::create(['name' => '食費']);
         Ratio::create([
+            'family_id' => $family->id,
             'user_id' => $user->id,
             'category_id' => $category->id,
             'ratio' => 0.5,
         ]);
         Ratio::create([
+            'family_id' => $family->id,
             'user_id' => $wife->id,
             'category_id' => $category->id,
             'ratio' => 0.5,
         ]);
 
         Expense::create([
+            'family_id' => $family->id,
             'user_id' => $user->id,
             'category_id' => $category->id,
             'amount' => 2000,
@@ -106,6 +112,7 @@ class MonthlyExpenseApiTest extends TestCase
             'note' => null,
         ]);
         Expense::create([
+            'family_id' => $family->id,
             'user_id' => $user->id,
             'category_id' => $category->id,
             'amount' => 3000,
@@ -132,22 +139,24 @@ class MonthlyExpenseApiTest extends TestCase
 
     public function test_personal_expenses_are_included_in_settlement(): void
     {
-        $husband = User::create(['name' => '夫']);
-        $wife = User::create(['name' => '妻']);
+        [$family, $husband, $wife] = $this->createFamilyUsers();
         $category = Category::create(['name' => '食費']);
 
         Ratio::create([
+            'family_id' => $family->id,
             'user_id' => $husband->id,
             'category_id' => $category->id,
             'ratio' => 0.5,
         ]);
         Ratio::create([
+            'family_id' => $family->id,
             'user_id' => $wife->id,
             'category_id' => $category->id,
             'ratio' => 0.5,
         ]);
 
         $expense = Expense::create([
+            'family_id' => $family->id,
             'user_id' => $husband->id,
             'category_id' => $category->id,
             'amount' => 2000,
@@ -182,22 +191,24 @@ class MonthlyExpenseApiTest extends TestCase
 
     public function test_solar_income_is_subtracted_from_monthly_total_and_settlement(): void
     {
-        $husband = User::create(['name' => '夫']);
-        $wife = User::create(['name' => '妻']);
+        [$family, $husband, $wife] = $this->createFamilyUsers();
         $electricity = Category::create(['name' => '電気代']);
 
         Ratio::create([
+            'family_id' => $family->id,
             'user_id' => $husband->id,
             'category_id' => $electricity->id,
             'ratio' => 0.5,
         ]);
         Ratio::create([
+            'family_id' => $family->id,
             'user_id' => $wife->id,
             'category_id' => $electricity->id,
             'ratio' => 0.5,
         ]);
 
         Expense::create([
+            'family_id' => $family->id,
             'user_id' => $husband->id,
             'category_id' => $electricity->id,
             'amount' => 10000,
