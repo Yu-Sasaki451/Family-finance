@@ -303,25 +303,6 @@ const MonthlyExpenseSummary = ({
                         <span>{formatMonth(selectedMonthSummary.month)}</span>
                         <strong>{formatAmount(selectedMonthSummary.total)}</strong>
                     </div>
-
-                    <div className="currentMonthStats">
-                        <div>
-                            <span>支出</span>
-                            <strong>
-                                {formatAmount(selectedMonthSummary.expense_total)}
-                            </strong>
-                        </div>
-                        <div>
-                            <span>売電</span>
-                            <strong>
-                                {formatAmount(selectedMonthSummary.income_total)}
-                            </strong>
-                        </div>
-                        <div>
-                            <span>件数</span>
-                            <strong>{selectedMonthSummary.count}件</strong>
-                        </div>
-                    </div>
                 </section>
             )}
 
