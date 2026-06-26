@@ -119,6 +119,16 @@ const MonthlyExpenseSummary = ({
         return `${Number(amount).toLocaleString()}円`;
     };
 
+    const getSettlementText = () => {
+        if (!settlement || settlement.error) {
+            return null;
+        }
+
+        return settlement.transfer
+            ? `${settlement.transfer.from}が${settlement.transfer.to}へ ${formatAmount(settlement.transfer.amount)} 支払う`
+            : "今月の支払いはありません。";
+    };
+
     const startEditing = (expense) => {
         setEditingExpense({
             id: expense.id,
@@ -276,6 +286,17 @@ const MonthlyExpenseSummary = ({
 
             {message && <p className="indexMessage">{message}</p>}
             {error && <p className="indexError">{error}</p>}
+
+            {currentMonthOnly && settlement?.error && (
+                <p className="settlementError">{settlement.error}</p>
+            )}
+
+            {currentMonthOnly && getSettlementText() && (
+                <section className="topSettlementPanel">
+                    <span>今月の精算</span>
+                    <strong>{getSettlementText()}</strong>
+                </section>
+            )}
 
             {currentMonthOnly && selectedMonthSummary && (
                 <section className="currentMonthPanel">
@@ -614,13 +635,13 @@ const MonthlyExpenseSummary = ({
                         <>
                             <h2>{formatMonth(selectedMonth)}の詳細</h2>
 
-                            {settlement?.error && (
+                            {!currentMonthOnly && settlement?.error && (
                                 <p className="settlementError">
                                     {settlement.error}
                                 </p>
                             )}
 
-                            {settlement && !settlement.error && (
+                            {!currentMonthOnly && settlement && !settlement.error && (
                                 <div className="settlementBox">
                                     <h3>この月に必要な精算</h3>
                                     <p className="settlementDescription">
