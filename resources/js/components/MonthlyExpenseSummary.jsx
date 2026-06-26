@@ -293,7 +293,6 @@ const MonthlyExpenseSummary = ({
 
             {currentMonthOnly && getSettlementText() && (
                 <section className="topSettlementPanel">
-                    <span>今月の精算</span>
                     <strong>{getSettlementText()}</strong>
                 </section>
             )}

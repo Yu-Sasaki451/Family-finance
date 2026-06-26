@@ -38,10 +38,6 @@
 }
 
 .topSettlementPanel {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
     margin-bottom: 18px;
     padding: 18px 20px;
     border: 2px solid #444;
@@ -49,15 +45,10 @@
     background-color: #f6ffe8;
 }
 
-.topSettlementPanel span {
-    color: #555;
-    font-weight: bold;
-    white-space: nowrap;
-}
-
 .topSettlementPanel strong {
+    display: block;
     font-size: 24px;
-    text-align: right;
+    text-align: center;
     overflow-wrap: anywhere;
 }
 
@@ -531,15 +522,11 @@
     }
 
     .topSettlementPanel {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 8px;
         padding: 16px;
     }
 
     .topSettlementPanel strong {
         font-size: 20px;
-        text-align: left;
     }
 
     .currentMonthHeader strong {
