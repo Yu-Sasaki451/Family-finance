@@ -26,15 +26,15 @@ const Header = () => {
                         </Link>
                         <Link
                             className="headerLink navRightLink"
-                            to={ROUTES.CATEGORY}
+                            to={ROUTES.SUMMARY}
                         >
-                            カテゴリ
+                            集計
                         </Link>
                         <Link
                             className="headerLink navRightLink"
-                            to={ROUTES.RATIO}
+                            to={ROUTES.SETTING}
                         >
-                            割合設定
+                            設定
                         </Link>
                     </nav>
                 </div>

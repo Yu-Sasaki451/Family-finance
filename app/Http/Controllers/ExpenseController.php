@@ -35,6 +35,20 @@ class ExpenseController extends Controller
         $selectedExpenses = $expenses
             ->filter(fn ($expense) => substr($expense->spent_at, 0, 7) === $selectedMonth);
 
+        $categoryTotals = $selectedExpenses
+            ->groupBy('category_id')
+            ->map(function ($items) {
+                $category = $items->first()->category;
+
+                return [
+                    'category_id' => $category->id,
+                    'category' => $category->name,
+                    'total' => $items->sum(fn ($expense) => $expense->amount - ($expense->income ?? 0)),
+                ];
+            })
+            ->sortByDesc('total')
+            ->values();
+
         $details = $selectedExpenses
             ->map(function (Expense $expense) {
                 $personalTotal = $expense->personal_expenses->sum('amount');
@@ -65,6 +79,7 @@ class ExpenseController extends Controller
         return [
             'months' => $months,
             'selected_month' => $selectedMonth,
+            'category_totals' => $categoryTotals,
             'details' => $details,
             'settlement' => $selectedMonth
                 ? $this->calculateSettlement($selectedExpenses, $users)

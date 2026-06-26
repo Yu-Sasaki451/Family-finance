@@ -3,6 +3,10 @@
     margin: 60px auto;
 }
 
+.topSummaryContainer {
+    width: min(980px, calc(100% - 32px));
+}
+
 .indexTitle {
     margin-bottom: 30px;
     text-align: center;
@@ -20,6 +24,172 @@
 
 .indexError {
     color: #ef4444;
+}
+
+.currentMonthPanel {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 20px;
+    margin-bottom: 34px;
+    padding: 26px;
+    border: 2px solid #444;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.currentMonthHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.currentMonthHeader span {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.currentMonthHeader strong {
+    font-size: 42px;
+    line-height: 1.1;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.currentMonthStats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.currentMonthStats div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+    background-color: #f8fafc;
+}
+
+.currentMonthStats span {
+    color: #555;
+    font-size: 14px;
+}
+
+.currentMonthStats strong {
+    font-size: 20px;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.monthSelectSection {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 32px;
+}
+
+.monthSelectLabel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(360px, 100%);
+    font-weight: bold;
+}
+
+.monthSelect {
+    min-height: 46px;
+    padding: 9px 12px;
+    border: 2px solid gray;
+    border-radius: 6px;
+    background-color: white;
+    font-size: 16px;
+}
+
+.monthlyTrendSection {
+    margin-bottom: 26px;
+    padding: 18px 20px;
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.monthlyTrendHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.monthlyTrendHeader h2 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.monthlyTrendHeader span {
+    color: #555;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.monthlyTrendChart {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(64px, 1fr));
+    gap: 8px;
+    min-height: 196px;
+    overflow-x: auto;
+    padding: 6px 2px 0;
+}
+
+.monthlyTrendItem {
+    display: grid;
+    grid-template-rows: 28px 126px 22px;
+    align-items: end;
+    gap: 7px;
+    min-width: 0;
+    text-align: center;
+}
+
+.monthlyTrendItem strong {
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.monthlyTrendItem span {
+    color: #555;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.monthlyTrendBarFrame {
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    height: 126px;
+    padding: 0 4px;
+    border-bottom: 2px solid #444;
+    background-image: linear-gradient(
+        to top,
+        #f1f5f9 1px,
+        transparent 1px
+    );
+    background-size: 100% 31.5px;
+}
+
+.monthlyTrendBar {
+    width: min(34px, 70%);
+    min-height: 8px;
+    border-radius: 6px 6px 0 0;
+    background-color: rgb(128, 207, 10);
+}
+
+.zeroTrendBar {
+    min-height: 0;
+    border-top: 3px solid #cbd5e1;
+    background-color: transparent;
 }
 
 .monthSummaryGrid {
@@ -58,7 +228,103 @@
 }
 
 .monthlyDetails h2 {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
+    text-align: center;
+}
+
+.categoryTotalGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.categoryGrandTotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    width: min(420px, 100%);
+    margin: 0 auto 18px;
+    padding: 18px 20px;
+    border: 2px solid #444;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.categoryGrandTotal span {
+    color: #555;
+    font-weight: bold;
+}
+
+.categoryGrandTotal strong {
+    font-size: 26px;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.categoryTotalCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 20px;
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.categoryTotalCard > div {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.categoryTotalCard span {
+    color: #555;
+    font-weight: bold;
+}
+
+.categoryTotalCard strong {
+    font-size: 24px;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.categoryDetailButton {
+    flex-shrink: 0;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #666;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.categoryDetailSection {
+    margin: 8px 0 28px;
+}
+
+.categoryDetailSection h3 {
+    margin: 0 0 14px;
+    text-align: center;
+}
+
+.monthlyDetailButtonArea {
+    margin: 20px 0 30px;
+    text-align: center;
+}
+
+.monthlyDetailButton {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 5px;
+    background-color: #666;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
 }
 
 .settlementBox {
@@ -212,6 +478,14 @@
     .monthSummaryGrid {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .currentMonthPanel {
+        grid-template-columns: 1fr;
+    }
+
+    .categoryTotalGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 700px) {
@@ -223,6 +497,70 @@
     .indexTitle {
         margin-bottom: 20px;
         font-size: 26px;
+    }
+
+    .currentMonthPanel {
+        gap: 16px;
+        margin-bottom: 26px;
+        padding: 18px;
+    }
+
+    .currentMonthHeader strong {
+        font-size: 34px;
+    }
+
+    .currentMonthStats {
+        grid-template-columns: 1fr;
+    }
+
+    .monthSelectSection {
+        margin-bottom: 24px;
+    }
+
+    .monthSelect {
+        min-height: 46px;
+    }
+
+    .monthlyTrendSection {
+        padding: 14px;
+    }
+
+    .monthlyTrendHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .monthlyTrendChart {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        gap: 3px;
+        min-height: 132px;
+        overflow-x: visible;
+        padding: 4px 0 0;
+    }
+
+    .monthlyTrendItem {
+        grid-template-rows: 92px 18px;
+        gap: 4px;
+    }
+
+    .monthlyTrendItem strong {
+        display: none;
+    }
+
+    .monthlyTrendItem span {
+        font-size: 11px;
+    }
+
+    .monthlyTrendBarFrame {
+        height: 92px;
+        padding: 0 1px;
+        background-size: 100% 23px;
+    }
+
+    .monthlyTrendBar {
+        width: min(18px, 80%);
+        min-height: 5px;
     }
 
     .monthSummaryGrid {
@@ -241,6 +579,35 @@
 
     .monthlyDetails h2 {
         font-size: 21px;
+    }
+
+    .categoryTotalGrid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .categoryTotalCard {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 16px;
+    }
+
+    .categoryDetailButton {
+        min-height: 42px;
+    }
+
+    .categoryGrandTotal {
+        margin-bottom: 14px;
+        padding: 16px;
+    }
+
+    .categoryGrandTotal strong {
+        font-size: 22px;
+    }
+
+    .monthlyDetailButton {
+        width: 100%;
+        min-height: 46px;
     }
 
     .settlementBox {

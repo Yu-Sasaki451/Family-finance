@@ -3,4 +3,6 @@ export const ROUTES = {
     CATEGORY: "/category",
     RATIO: "/ratio",
     EXPENSE: "/expense",
+    SETTING: "/setting",
+    SUMMARY: "/summary",
 };

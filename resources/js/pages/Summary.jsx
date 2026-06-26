@@ -1,17 +1,18 @@
 import Header from "../components/Header";
 import MonthlyExpenseSummary from "../components/MonthlyExpenseSummary";
 
-const Index = () => {
+const Summary = () => {
     return (
         <>
             <Header />
             <MonthlyExpenseSummary
-                title="今月の集計"
-                currentMonthOnly
-                showCategoryTotals={false}
+                title=""
+                monthPicker="select"
+                showDetailsSection={false}
+                showTrendChart
             />
         </>
     );
 };
 
-export default Index;
+export default Summary;

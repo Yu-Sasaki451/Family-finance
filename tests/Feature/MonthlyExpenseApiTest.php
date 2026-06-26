@@ -34,7 +34,52 @@ class MonthlyExpenseApiTest extends TestCase
                 'count' => 1,
             ])
             ->assertJsonPath('selected_month', null)
+            ->assertJsonCount(0, 'category_totals')
             ->assertJsonCount(0, 'details');
+    }
+
+    public function test_selected_month_expenses_are_summarized_by_category(): void
+    {
+        $user = User::create(['name' => '夫']);
+        $food = Category::create(['name' => '食費']);
+        $rent = Category::create(['name' => '家賃']);
+
+        Expense::create([
+            'user_id' => $user->id,
+            'category_id' => $food->id,
+            'amount' => 2000,
+            'spent_at' => '2026-06-09',
+            'note' => null,
+        ]);
+        Expense::create([
+            'user_id' => $user->id,
+            'category_id' => $food->id,
+            'amount' => 3000,
+            'spent_at' => '2026-06-10',
+            'note' => null,
+        ]);
+        Expense::create([
+            'user_id' => $user->id,
+            'category_id' => $rent->id,
+            'amount' => 80000,
+            'spent_at' => '2026-06-25',
+            'note' => null,
+        ]);
+        Expense::create([
+            'user_id' => $user->id,
+            'category_id' => $food->id,
+            'amount' => 1000,
+            'spent_at' => '2026-05-09',
+            'note' => null,
+        ]);
+
+        $this->getJson('/api/expenses/monthly?month=2026-06')
+            ->assertOk()
+            ->assertJsonPath('category_totals.0.category', '家賃')
+            ->assertJsonPath('category_totals.0.total', 80000)
+            ->assertJsonPath('category_totals.1.category', '食費')
+            ->assertJsonPath('category_totals.1.total', 5000)
+            ->assertJsonCount(2, 'category_totals');
     }
 
     public function test_selected_month_details_are_displayed(): void
