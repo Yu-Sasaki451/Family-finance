@@ -214,10 +214,15 @@ const MonthlyExpenseSummary = ({
         }
     };
 
-    const toggleCategoryDetails = (categoryId) => {
-        setSelectedCategoryId(
-            selectedCategoryId === categoryId ? null : categoryId,
+    const isSelectedCategory = (categoryId) => {
+        return (
+            selectedCategoryId !== null &&
+            String(selectedCategoryId) === String(categoryId)
         );
+    };
+
+    const toggleCategoryDetails = (categoryId) => {
+        setSelectedCategoryId(isSelectedCategory(categoryId) ? null : categoryId);
         setShowDetails(false);
         setEditingExpense(null);
     };
@@ -255,10 +260,10 @@ const MonthlyExpenseSummary = ({
         1,
     );
     const selectedCategoryTotal = categoryTotals.find(
-        (categoryTotal) => categoryTotal.category_id === selectedCategoryId,
+        (categoryTotal) => isSelectedCategory(categoryTotal.category_id),
     );
     const selectedCategoryDetails = selectedCategoryId
-        ? details.filter((expense) => expense.category_id === selectedCategoryId)
+        ? details.filter((expense) => isSelectedCategory(expense.category_id))
         : [];
 
     return (
@@ -413,135 +418,174 @@ const MonthlyExpenseSummary = ({
 
                                     <div className="categoryTotalGrid">
                                         {categoryTotals.map((categoryTotal) => (
-                                            <div
-                                                className="categoryTotalCard"
+                                            <Fragment
                                                 key={categoryTotal.category_id}
                                             >
-                                                <div>
-                                                    <span>
-                                                        {categoryTotal.category}
-                                                    </span>
-                                                    <strong>
-                                                        {formatAmount(
-                                                            categoryTotal.total,
-                                                        )}
-                                                    </strong>
-                                                </div>
-                                                <button
-                                                    className="categoryDetailButton"
-                                                    type="button"
-                                                    onClick={() =>
-                                                        toggleCategoryDetails(
+                                                <div
+                                                    className="categoryTotalCard"
+                                                >
+                                                    <div>
+                                                        <span>
+                                                            {
+                                                                categoryTotal.category
+                                                            }
+                                                        </span>
+                                                        <strong>
+                                                            {formatAmount(
+                                                                categoryTotal.total,
+                                                            )}
+                                                        </strong>
+                                                    </div>
+                                                    <button
+                                                        className="categoryDetailButton"
+                                                        type="button"
+                                                        onClick={() =>
+                                                            toggleCategoryDetails(
+                                                                categoryTotal.category_id,
+                                                            )
+                                                        }
+                                                    >
+                                                        {isSelectedCategory(
                                                             categoryTotal.category_id,
                                                         )
-                                                    }
-                                                >
-                                                    {selectedCategoryId ===
-                                                    categoryTotal.category_id
-                                                        ? "詳細を閉じる"
-                                                        : "詳細を見る"}
-                                                </button>
-                                            </div>
+                                                            ? "詳細を閉じる"
+                                                            : "詳細を見る"}
+                                                    </button>
+                                                </div>
+
+                                                {isSelectedCategory(
+                                                    categoryTotal.category_id,
+                                                ) && (
+                                                    <div className="categoryDetailSection">
+                                                        <h3>
+                                                            {formatMonth(
+                                                                selectedMonth,
+                                                            )}
+                                                            の
+                                                            {
+                                                                categoryTotal.category
+                                                            }
+                                                            詳細
+                                                        </h3>
+
+                                                        {selectedCategoryDetails.length >
+                                                        0 ? (
+                                                            <table className="monthlyDetailsTable">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>
+                                                                            日付
+                                                                        </th>
+                                                                        <th>
+                                                                            支払者
+                                                                        </th>
+                                                                        <th>
+                                                                            合計金額
+                                                                        </th>
+                                                                        <th>
+                                                                            売電収入
+                                                                        </th>
+                                                                        <th>
+                                                                            差引金額
+                                                                        </th>
+                                                                        <th>
+                                                                            個人分
+                                                                        </th>
+                                                                        <th>
+                                                                            共有分
+                                                                        </th>
+                                                                        <th>
+                                                                            メモ
+                                                                        </th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {selectedCategoryDetails.map(
+                                                                        (
+                                                                            expense,
+                                                                        ) => (
+                                                                            <tr
+                                                                                key={
+                                                                                    expense.id
+                                                                                }
+                                                                            >
+                                                                                <td data-label="日付">
+                                                                                    {
+                                                                                        expense.spent_at
+                                                                                    }
+                                                                                </td>
+                                                                                <td data-label="支払者">
+                                                                                    {
+                                                                                        expense.user
+                                                                                    }
+                                                                                </td>
+                                                                                <td data-label="合計金額">
+                                                                                    {formatAmount(
+                                                                                        expense.amount,
+                                                                                    )}
+                                                                                </td>
+                                                                                <td data-label="売電収入">
+                                                                                    {expense.income
+                                                                                        ? formatAmount(
+                                                                                              expense.income,
+                                                                                          )
+                                                                                        : "-"}
+                                                                                </td>
+                                                                                <td data-label="差引金額">
+                                                                                    {formatAmount(
+                                                                                        expense.net_amount,
+                                                                                    )}
+                                                                                </td>
+                                                                                <td data-label="個人分">
+                                                                                    {expense
+                                                                                        .personal_expenses
+                                                                                        .length >
+                                                                                    0
+                                                                                        ? expense.personal_expenses.map(
+                                                                                              (
+                                                                                                  item,
+                                                                                              ) => (
+                                                                                                  <div
+                                                                                                      key={`${expense.id}-${item.user}`}
+                                                                                                  >
+                                                                                                      {
+                                                                                                          item.user
+                                                                                                      }
+                                                                                                      :{" "}
+                                                                                                      {formatAmount(
+                                                                                                          item.amount,
+                                                                                                      )}
+                                                                                                      {item.note &&
+                                                                                                          `（${item.note}）`}
+                                                                                                  </div>
+                                                                                              ),
+                                                                                          )
+                                                                                        : "-"}
+                                                                                </td>
+                                                                                <td data-label="共有分">
+                                                                                    {formatAmount(
+                                                                                        expense.shared_amount,
+                                                                                    )}
+                                                                                </td>
+                                                                                <td data-label="メモ">
+                                                                                    {expense.note ||
+                                                                                        "-"}
+                                                                                </td>
+                                                                            </tr>
+                                                                        ),
+                                                                    )}
+                                                                </tbody>
+                                                            </table>
+                                                        ) : (
+                                                            <p className="noExpenses">
+                                                                このカテゴリの詳細はありません。
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </Fragment>
                                         ))}
                                     </div>
-
-                                    {selectedCategoryTotal && (
-                                        <div className="categoryDetailSection">
-                                            <h3>
-                                                {formatMonth(selectedMonth)}の
-                                                {selectedCategoryTotal.category}
-                                                詳細
-                                            </h3>
-                                            <table className="monthlyDetailsTable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>日付</th>
-                                                        <th>支払者</th>
-                                                        <th>合計金額</th>
-                                                        <th>売電収入</th>
-                                                        <th>差引金額</th>
-                                                        <th>個人分</th>
-                                                        <th>共有分</th>
-                                                        <th>メモ</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {selectedCategoryDetails.map(
-                                                        (expense) => (
-                                                            <tr
-                                                                key={
-                                                                    expense.id
-                                                                }
-                                                            >
-                                                                <td data-label="日付">
-                                                                    {
-                                                                        expense.spent_at
-                                                                    }
-                                                                </td>
-                                                                <td data-label="支払者">
-                                                                    {
-                                                                        expense.user
-                                                                    }
-                                                                </td>
-                                                                <td data-label="合計金額">
-                                                                    {formatAmount(
-                                                                        expense.amount,
-                                                                    )}
-                                                                </td>
-                                                                <td data-label="売電収入">
-                                                                    {expense.income
-                                                                        ? formatAmount(
-                                                                              expense.income,
-                                                                          )
-                                                                        : "-"}
-                                                                </td>
-                                                                <td data-label="差引金額">
-                                                                    {formatAmount(
-                                                                        expense.net_amount,
-                                                                    )}
-                                                                </td>
-                                                                <td data-label="個人分">
-                                                                    {expense
-                                                                        .personal_expenses
-                                                                        .length >
-                                                                    0
-                                                                        ? expense.personal_expenses.map(
-                                                                              (
-                                                                                  item,
-                                                                              ) => (
-                                                                                  <div
-                                                                                      key={`${expense.id}-${item.user}`}
-                                                                                  >
-                                                                                      {
-                                                                                          item.user
-                                                                                      }
-                                                                                      :{" "}
-                                                                                      {formatAmount(
-                                                                                          item.amount,
-                                                                                      )}
-                                                                                      {item.note &&
-                                                                                          `（${item.note}）`}
-                                                                                  </div>
-                                                                              ),
-                                                                          )
-                                                                        : "-"}
-                                                                </td>
-                                                                <td data-label="共有分">
-                                                                    {formatAmount(
-                                                                        expense.shared_amount,
-                                                                    )}
-                                                                </td>
-                                                                <td data-label="メモ">
-                                                                    {expense.note ||
-                                                                        "-"}
-                                                                </td>
-                                                            </tr>
-                                                        ),
-                                                    )}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    )}
                                 </>
                             ) : (
                                 <p className="noExpenses">
