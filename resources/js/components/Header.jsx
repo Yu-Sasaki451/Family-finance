@@ -46,6 +46,12 @@ const Header = () => {
                     </Link>
                     <Link
                         className="headerLink navRightLink"
+                        to={ROUTES.CASH_FLOW_FORECAST}
+                    >
+                        収支計算
+                    </Link>
+                    <Link
+                        className="headerLink navRightLink"
                         to={ROUTES.SETTING}
                     >
                         設定

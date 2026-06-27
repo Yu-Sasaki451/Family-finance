@@ -8,4 +8,5 @@ export const ROUTES = {
     SETTING: "/setting",
     SUMMARY: "/summary",
     FAMILY: "/family",
+    CASH_FLOW_FORECAST: "/cash-flow-forecast",
 };

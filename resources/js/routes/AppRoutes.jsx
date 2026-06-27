@@ -4,6 +4,7 @@ import Ratio from "../pages/Ratio";
 import Expense from "../pages/Expense";
 import Setting from "../pages/Setting";
 import Summary from "../pages/Summary";
+import CashFlowForecast from "../pages/CashFlowForecast";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Family from "../pages/Family";
@@ -37,6 +38,7 @@ const AppRoutes = () => {
             <Route path={ROUTES.EXPENSE} element={<ProtectedRoute><Expense /></ProtectedRoute>}></Route>
             <Route path={ROUTES.SETTING} element={<ProtectedRoute><Setting /></ProtectedRoute>}></Route>
             <Route path={ROUTES.SUMMARY} element={<ProtectedRoute><Summary /></ProtectedRoute>}></Route>
+            <Route path={ROUTES.CASH_FLOW_FORECAST} element={<ProtectedRoute><CashFlowForecast /></ProtectedRoute>}></Route>
             <Route path={ROUTES.FAMILY} element={<ProtectedRoute><Family /></ProtectedRoute>}></Route>
         </Routes>
     );

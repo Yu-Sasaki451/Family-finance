@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CashFlowForecastController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FamilyController;
@@ -45,4 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/expenses', [ExpenseController::class, 'store']);
     Route::put('/expenses/{expense}', [ExpenseController::class, 'update']);
     Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy']);
+
+    Route::get('/cash-flow-forecast', [CashFlowForecastController::class, 'show']);
+    Route::put('/cash-flow-forecast', [CashFlowForecastController::class, 'update']);
 });

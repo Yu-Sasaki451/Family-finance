@@ -1,0 +1,254 @@
+.forecastContainer {
+    width: min(1180px, calc(100% - 32px));
+    margin: 52px auto;
+}
+
+.forecastTitle {
+    margin-bottom: 28px;
+    text-align: center;
+}
+
+.forecastMessage,
+.forecastError {
+    text-align: center;
+    font-weight: bold;
+}
+
+.forecastMessage {
+    color: green;
+}
+
+.forecastError,
+.minusResult {
+    color: #dc2626;
+}
+
+.forecastSection {
+    margin-bottom: 26px;
+    padding: 20px;
+    border: 1px solid #d5d5d5;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.forecastSection h2 {
+    margin: 0 0 16px;
+    font-size: 22px;
+}
+
+.forecastSectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.forecastSectionHeader h2 {
+    margin: 0;
+}
+
+.forecastSectionHeader button,
+.forecastDeleteButton,
+.forecastSaveButton,
+.forecastScopeButtons button {
+    border: none;
+    border-radius: 5px;
+    background-color: #666;
+    color: white;
+    cursor: pointer;
+}
+
+.forecastSectionHeader button {
+    padding: 9px 14px;
+    font-size: 15px;
+}
+
+.forecastScopeButtons {
+    display: flex;
+    gap: 10px;
+}
+
+.forecastScopeButtons button {
+    min-width: 140px;
+    padding: 10px 14px;
+    border: 2px solid #666;
+    background-color: white;
+    color: #333;
+    font-size: 15px;
+}
+
+.forecastScopeButtons .selectedScopeButton {
+    background-color: #666;
+    color: white;
+}
+
+.forecastMonthLabel,
+.balanceField {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-weight: bold;
+}
+
+.forecastMonthLabel {
+    width: min(260px, 100%);
+}
+
+.forecastMonthLabel input,
+.forecastTableRow input,
+.balanceField input {
+    min-width: 0;
+    padding: 9px;
+    border: 1px solid gray;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.balanceGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.forecastAmountField {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 28px;
+    align-items: center;
+    gap: 6px;
+}
+
+.forecastAmountField span {
+    color: #555;
+    font-weight: bold;
+}
+
+.forecastTable {
+    display: grid;
+    gap: 10px;
+}
+
+.forecastTableHeader,
+.forecastTableRow {
+    display: grid;
+    align-items: center;
+    gap: 10px;
+}
+
+.fixedForecastRow {
+    grid-template-columns: minmax(160px, 1.4fr) minmax(120px, 1fr) 70px;
+}
+
+.variableForecastRow {
+    grid-template-columns: minmax(160px, 1.4fr) repeat(3, minmax(120px, 1fr)) 70px;
+}
+
+.forecastTableHeader {
+    color: #555;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.forecastTableRow {
+    padding: 12px;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+}
+
+.forecastMonthAmount {
+    display: grid;
+    gap: 5px;
+}
+
+.forecastMonthName {
+    color: #555;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.forecastDeleteButton {
+    padding: 8px 10px;
+    background-color: #dc2626;
+}
+
+.resultGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.resultCard {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    border: 1px solid #d5d5d5;
+    border-radius: 6px;
+}
+
+.resultCard strong {
+    font-size: 18px;
+}
+
+.resultCard span,
+.resultCard b {
+    overflow-wrap: anywhere;
+}
+
+.forecastSaveArea {
+    text-align: center;
+}
+
+.forecastSaveButton {
+    min-width: 180px;
+    padding: 12px 22px;
+    font-size: 17px;
+}
+
+@media (max-width: 900px) {
+    .forecastTable {
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .forecastTableHeader,
+    .forecastTableRow {
+        min-width: 850px;
+    }
+
+    .variableForecastRow {
+        min-width: 720px;
+    }
+
+    .balanceGrid,
+    .resultGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .forecastContainer {
+        width: calc(100% - 24px);
+        margin: 28px auto;
+    }
+
+    .forecastSection {
+        padding: 16px;
+    }
+
+    .forecastTable {
+        overflow-x: visible;
+    }
+
+    .forecastTableHeader {
+        display: none;
+    }
+
+    .forecastTableRow,
+    .fixedForecastRow,
+    .variableForecastRow {
+        grid-template-columns: 1fr;
+        min-width: 0;
+    }
+
+}
