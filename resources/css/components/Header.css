@@ -5,16 +5,27 @@
 .headerFlex {
     width: min(1100px, calc(100% - 40px));
     display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
     gap: 12px;
     margin: 0 auto;
-    padding: 14px 0 16px;
+    padding: 14px 0;
 }
 
 .headerTop {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
+    display: contents;
+}
+
+.headerLeft {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+}
+
+.headerRight {
+    grid-column: 3;
+    grid-row: 1;
+    min-width: 0;
 }
 
 .headerLink {
@@ -29,8 +40,12 @@
 }
 
 .headerPageLinks {
+    grid-column: 2;
+    grid-row: 1;
     display: flex;
+    justify-content: center;
     gap: 12px;
+    min-width: 0;
 }
 
 .navRightLink {
@@ -46,7 +61,9 @@
 .headerAccount {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 12px;
+    min-width: 0;
 }
 
 .headerUserName {
@@ -69,12 +86,23 @@
 @media (max-width: 700px) {
     .headerFlex {
         width: 100%;
+        grid-template-columns: 1fr;
         padding: 10px 16px;
         gap: 10px;
     }
 
     .headerTop {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         gap: 12px;
+    }
+
+    .headerLeft,
+    .headerRight,
+    .headerPageLinks {
+        grid-column: auto;
+        grid-row: auto;
     }
 
     .linkIndex {
