@@ -3,6 +3,7 @@ services:
     name: family-finance
     runtime: docker
     plan: free
+    region: virginia
     autoDeployTrigger: commit
     envVars:
       - key: APP_ENV
