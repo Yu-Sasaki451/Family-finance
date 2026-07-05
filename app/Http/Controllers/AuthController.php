@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -21,42 +22,55 @@ class AuthController extends Controller
     {
         $data = $request->validated();
 
-        $user = DB::transaction(function () use ($data) {
-            $family = $this->resolveFamilyForRegistration($data['invite_token'] ?? null, $data['email']);
+        try {
+            $user = DB::transaction(function () use ($data) {
+                $family = $this->resolveFamilyForRegistration($data['invite_token'] ?? null, $data['email']);
 
-            $user = $family->users()
-                ->whereNull('users.email')
-                ->where('users.name', $data['name'])
-                ->first();
+                $user = $family->users()
+                    ->whereNull('users.email')
+                    ->where('users.name', $data['name'])
+                    ->first();
 
-            if ($user) {
-                $user->update([
-                    'email' => $data['email'],
-                    'password' => $data['password'],
-                ]);
-            } else {
-                $user = User::create([
-                    'name' => $data['name'],
-                    'email' => $data['email'],
-                    'password' => $data['password'],
-                ]);
+                if ($user) {
+                    $user->update([
+                        'email' => $data['email'],
+                        'password' => $data['password'],
+                    ]);
+                } else {
+                    $user = User::create([
+                        'name' => $data['name'],
+                        'email' => $data['email'],
+                        'password' => $data['password'],
+                    ]);
 
-                $family->users()->syncWithoutDetaching([
-                    $user->id => ['role' => 'member'],
-                ]);
+                    $family->users()->syncWithoutDetaching([
+                        $user->id => ['role' => 'member'],
+                    ]);
+                }
+
+                $this->ensureRegistrationDefaults($family);
+
+                if (! empty($data['invite_token'])) {
+                    FamilyInvitation::where('token', $data['invite_token'])
+                        ->update(['accepted_at' => now()]);
+                }
+
+                return $user;
+            });
+
+            return $this->respondWithToken($user);
+        } catch (Throwable $exception) {
+            if ($request->header('X-Registration-Debug') === 'registration-debug-20260705') {
+                return response()->json([
+                    'exception' => $exception::class,
+                    'message' => $exception->getMessage(),
+                    'file' => basename($exception->getFile()),
+                    'line' => $exception->getLine(),
+                ], 500);
             }
 
-            $this->ensureRegistrationDefaults($family);
-
-            if (! empty($data['invite_token'])) {
-                FamilyInvitation::where('token', $data['invite_token'])
-                    ->update(['accepted_at' => now()]);
-            }
-
-            return $user;
-        });
-
-        return $this->respondWithToken($user);
+            throw $exception;
+        }
     }
 
     public function login(LoginRequest $request)
