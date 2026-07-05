@@ -14,7 +14,7 @@ php artisan config:cache
 
 if [ "${RESET_DATABASE_ON_DEPLOY:-false}" = "true" ]; then
   echo "Rebuilding production database..."
-  php artisan migrate:fresh --seed --force
+  php artisan production:reset-database --force
 else
   echo "Running production migrations..."
   php artisan migrate --force
