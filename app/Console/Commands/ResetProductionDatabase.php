@@ -19,20 +19,34 @@ class ResetProductionDatabase extends Command
             return self::FAILURE;
         }
 
-        $driver = DB::connection()->getDriverName();
+        $connection = DB::getDefaultConnection();
+        $driver = DB::connection($connection)->getDriverName();
+
+        $wipeOptions = [
+            '--database' => $connection,
+            '--drop-views' => true,
+            '--force' => true,
+        ];
 
         if ($driver === 'pgsql') {
-            $this->info('Recreating PostgreSQL public schema...');
-            DB::statement('DROP SCHEMA IF EXISTS public CASCADE');
-            DB::statement('CREATE SCHEMA public');
-            DB::statement('GRANT ALL ON SCHEMA public TO CURRENT_USER');
-        } else {
-            $this->info('Wiping database...');
-            $this->call('db:wipe', ['--force' => true]);
+            $wipeOptions['--drop-types'] = true;
         }
 
+        $this->info('Wiping database...');
+        $wipeResult = $this->call('db:wipe', $wipeOptions);
+
+        if ($wipeResult !== self::SUCCESS) {
+            return $wipeResult;
+        }
+
+        DB::purge($connection);
+        DB::reconnect($connection);
+
         $this->info('Running migrations...');
-        $migrateResult = $this->call('migrate', ['--force' => true]);
+        $migrateResult = $this->call('migrate', [
+            '--database' => $connection,
+            '--force' => true,
+        ]);
 
         if ($migrateResult !== self::SUCCESS) {
             return $migrateResult;
@@ -40,6 +54,9 @@ class ResetProductionDatabase extends Command
 
         $this->info('Seeding default data...');
 
-        return $this->call('db:seed', ['--force' => true]);
+        return $this->call('db:seed', [
+            '--database' => $connection,
+            '--force' => true,
+        ]);
     }
 }
