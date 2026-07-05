@@ -12,3 +12,6 @@ php artisan route:cache
 
 echo "Running migrations..."
 php artisan migrate --force
+
+echo "Seeding default categories..."
+php artisan db:seed --class=CategorySeeder --force

@@ -8,20 +8,27 @@ use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
+    public const DEFAULT_CATEGORIES = [
+        '食費',
+        '電気代',
+        '水道代',
+        '日用品',
+        '交通費',
+        '通信費',
+        '家ローン',
+        'その他',
+    ];
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        DB::table('categories')->insert([
-            ['name' => '食費'],
-            ['name' => '電気代'],
-            ['name' => '水道代'],
-            ['name' => '日用品'],
-            ['name' => '交通費'],
-            ['name' => '通信費'],
-            ['name' => '家ローン'],
-            ['name' => 'その他'],
-        ]);
+        foreach (self::DEFAULT_CATEGORIES as $name) {
+            DB::table('categories')->updateOrInsert(
+                ['name' => $name],
+                ['name' => $name],
+            );
+        }
     }
 }

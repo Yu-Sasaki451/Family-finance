@@ -6,7 +6,10 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\Family;
 use App\Models\FamilyInvitation;
+use App\Models\Category;
+use App\Models\Ratio;
 use App\Models\User;
+use Database\Seeders\CategorySeeder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -42,6 +45,8 @@ class AuthController extends Controller
                     $user->id => ['role' => 'member'],
                 ]);
             }
+
+            $this->ensureRegistrationDefaults($family);
 
             if (! empty($data['invite_token'])) {
                 FamilyInvitation::where('token', $data['invite_token'])
@@ -122,6 +127,40 @@ class AuthController extends Controller
         }
 
         return Family::create(['name' => 'グループ']);
+    }
+
+    private function ensureRegistrationDefaults(Family $family): void
+    {
+        foreach (CategorySeeder::DEFAULT_CATEGORIES as $name) {
+            Category::firstOrCreate(['name' => $name]);
+        }
+
+        $users = $family->users()->orderBy('users.id')->get(['users.id']);
+        $categories = Category::orderBy('id')->get(['id', 'name']);
+
+        foreach ($categories as $category) {
+            foreach ($users as $index => $user) {
+                Ratio::firstOrCreate(
+                    [
+                        'family_id' => $family->id,
+                        'user_id' => $user->id,
+                        'category_id' => $category->id,
+                    ],
+                    [
+                        'ratio' => $this->defaultRatio($category->name, $index),
+                    ],
+                );
+            }
+        }
+    }
+
+    private function defaultRatio(string $categoryName, int $userIndex): float
+    {
+        if ($categoryName === '家ローン') {
+            return $userIndex === 0 ? 0.45 : 0.55;
+        }
+
+        return 0.5;
     }
 
     private function respondWithToken(User $user)

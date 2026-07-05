@@ -26,6 +26,8 @@ class AuthApiTest extends TestCase
             'email' => 'taro@example.com',
         ]);
         $this->assertDatabaseCount('families', 1);
+        $this->assertDatabaseCount('categories', 8);
+        $this->assertDatabaseCount('ratios', 8);
     }
 
     public function test_user_can_login(): void
