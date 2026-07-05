@@ -12,7 +12,15 @@ php artisan optimize:clear
 echo "Caching Laravel config..."
 php artisan config:cache
 
-echo "Rebuilding production database..."
-php artisan migrate:fresh --seed --force
+if [ "${RESET_DATABASE_ON_DEPLOY:-false}" = "true" ]; then
+  echo "Rebuilding production database..."
+  php artisan migrate:fresh --seed --force
+else
+  echo "Running production migrations..."
+  php artisan migrate --force
+
+  echo "Seeding default data..."
+  php artisan db:seed --force
+fi
 
 exec /start.sh

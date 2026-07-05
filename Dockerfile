@@ -11,6 +11,8 @@ RUN npm run build
 
 FROM richarvey/nginx-php-fpm:3.1.6
 
+WORKDIR /var/www/html
+
 COPY . .
 COPY --from=frontend /app/public/build ./public/build
 
@@ -23,6 +25,7 @@ ENV REAL_IP_HEADER=1
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 ENV LOG_CHANNEL=stderr
+ENV RESET_DATABASE_ON_DEPLOY=true
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
