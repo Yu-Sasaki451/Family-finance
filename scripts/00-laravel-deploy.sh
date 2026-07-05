@@ -13,5 +13,5 @@ php artisan config:cache
 echo "Running migrations..."
 php artisan migrate --force
 
-echo "Seeding default categories..."
-php artisan db:seed --class=CategorySeeder --force
+echo "Seeding default data..."
+php artisan db:seed --force

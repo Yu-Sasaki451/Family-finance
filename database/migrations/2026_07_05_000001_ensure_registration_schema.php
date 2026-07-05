@@ -16,19 +16,25 @@ return new class extends Migration
             });
         }
 
-        Schema::table('users', function (Blueprint $table) {
-            if (! Schema::hasColumn('users', 'email')) {
-                $table->string('email')->nullable()->unique();
-            }
+        $needsEmail = ! Schema::hasColumn('users', 'email');
+        $needsPassword = ! Schema::hasColumn('users', 'password');
+        $needsRememberToken = ! Schema::hasColumn('users', 'remember_token');
 
-            if (! Schema::hasColumn('users', 'password')) {
-                $table->string('password')->nullable();
-            }
+        if ($needsEmail || $needsPassword || $needsRememberToken) {
+            Schema::table('users', function (Blueprint $table) use ($needsEmail, $needsPassword, $needsRememberToken) {
+                if ($needsEmail) {
+                    $table->string('email')->nullable()->unique();
+                }
 
-            if (! Schema::hasColumn('users', 'remember_token')) {
-                $table->rememberToken();
-            }
-        });
+                if ($needsPassword) {
+                    $table->string('password')->nullable();
+                }
+
+                if ($needsRememberToken) {
+                    $table->rememberToken();
+                }
+            });
+        }
 
         if (! Schema::hasTable('family_user')) {
             Schema::create('family_user', function (Blueprint $table) {
@@ -44,14 +50,24 @@ return new class extends Migration
             return;
         }
 
-        Schema::table('family_user', function (Blueprint $table) {
-            if (! Schema::hasColumn('family_user', 'role')) {
-                $table->string('role')->default('member');
-            }
+        $needsRole = ! Schema::hasColumn('family_user', 'role');
+        $needsCreatedAt = ! Schema::hasColumn('family_user', 'created_at');
+        $needsUpdatedAt = ! Schema::hasColumn('family_user', 'updated_at');
 
-            if (! Schema::hasColumn('family_user', 'created_at')) {
-                $table->timestamps();
-            }
-        });
+        if ($needsRole || $needsCreatedAt || $needsUpdatedAt) {
+            Schema::table('family_user', function (Blueprint $table) use ($needsRole, $needsCreatedAt, $needsUpdatedAt) {
+                if ($needsRole) {
+                    $table->string('role')->default('member');
+                }
+
+                if ($needsCreatedAt) {
+                    $table->timestamp('created_at')->nullable();
+                }
+
+                if ($needsUpdatedAt) {
+                    $table->timestamp('updated_at')->nullable();
+                }
+            });
+        }
     }
 };

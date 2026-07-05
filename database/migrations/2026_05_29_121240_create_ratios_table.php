@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('ratios')) {
+            return;
+        }
+
         Schema::create('ratios', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id');

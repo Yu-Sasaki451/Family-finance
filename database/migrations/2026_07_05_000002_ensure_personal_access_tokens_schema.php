@@ -23,37 +23,75 @@ return new class extends Migration
             return;
         }
 
-        Schema::table('personal_access_tokens', function (Blueprint $table) {
-            if (! Schema::hasColumn('personal_access_tokens', 'tokenable_type')) {
+        $needsTokenableType = ! Schema::hasColumn('personal_access_tokens', 'tokenable_type');
+        $needsTokenableId = ! Schema::hasColumn('personal_access_tokens', 'tokenable_id');
+        $needsName = ! Schema::hasColumn('personal_access_tokens', 'name');
+        $needsToken = ! Schema::hasColumn('personal_access_tokens', 'token');
+        $needsAbilities = ! Schema::hasColumn('personal_access_tokens', 'abilities');
+        $needsLastUsedAt = ! Schema::hasColumn('personal_access_tokens', 'last_used_at');
+        $needsExpiresAt = ! Schema::hasColumn('personal_access_tokens', 'expires_at');
+        $needsCreatedAt = ! Schema::hasColumn('personal_access_tokens', 'created_at');
+        $needsUpdatedAt = ! Schema::hasColumn('personal_access_tokens', 'updated_at');
+
+        if (
+            ! $needsTokenableType
+            && ! $needsTokenableId
+            && ! $needsName
+            && ! $needsToken
+            && ! $needsAbilities
+            && ! $needsLastUsedAt
+            && ! $needsExpiresAt
+            && ! $needsCreatedAt
+            && ! $needsUpdatedAt
+        ) {
+            return;
+        }
+
+        Schema::table('personal_access_tokens', function (Blueprint $table) use (
+            $needsTokenableType,
+            $needsTokenableId,
+            $needsName,
+            $needsToken,
+            $needsAbilities,
+            $needsLastUsedAt,
+            $needsExpiresAt,
+            $needsCreatedAt,
+            $needsUpdatedAt,
+        ) {
+            if ($needsTokenableType) {
                 $table->string('tokenable_type')->nullable();
             }
 
-            if (! Schema::hasColumn('personal_access_tokens', 'tokenable_id')) {
+            if ($needsTokenableId) {
                 $table->unsignedBigInteger('tokenable_id')->nullable();
             }
 
-            if (! Schema::hasColumn('personal_access_tokens', 'name')) {
+            if ($needsName) {
                 $table->string('name')->nullable();
             }
 
-            if (! Schema::hasColumn('personal_access_tokens', 'token')) {
+            if ($needsToken) {
                 $table->string('token', 64)->nullable()->unique();
             }
 
-            if (! Schema::hasColumn('personal_access_tokens', 'abilities')) {
+            if ($needsAbilities) {
                 $table->text('abilities')->nullable();
             }
 
-            if (! Schema::hasColumn('personal_access_tokens', 'last_used_at')) {
+            if ($needsLastUsedAt) {
                 $table->timestamp('last_used_at')->nullable();
             }
 
-            if (! Schema::hasColumn('personal_access_tokens', 'expires_at')) {
+            if ($needsExpiresAt) {
                 $table->timestamp('expires_at')->nullable();
             }
 
-            if (! Schema::hasColumn('personal_access_tokens', 'created_at')) {
-                $table->timestamps();
+            if ($needsCreatedAt) {
+                $table->timestamp('created_at')->nullable();
+            }
+
+            if ($needsUpdatedAt) {
+                $table->timestamp('updated_at')->nullable();
             }
         });
     }

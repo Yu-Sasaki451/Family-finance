@@ -12,13 +12,18 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $now = now();
+
         foreach (['夫', '妻'] as $name) {
             if (! DB::table('users')->where('name', $name)->exists()) {
-                DB::table('users')->insert(['name' => $name]);
+                DB::table('users')->insert([
+                    'name' => $name,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
             }
         }
 
-        $now = now();
         $familyId = DB::table('families')->orderBy('id')->value('id')
             ?? DB::table('families')->insertGetId([
                 'name' => 'グループ',

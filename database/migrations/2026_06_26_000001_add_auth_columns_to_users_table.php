@@ -8,17 +8,42 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('email')->nullable()->unique()->after('name');
-            $table->string('password')->nullable()->after('email');
-            $table->rememberToken();
+        $needsEmail = ! Schema::hasColumn('users', 'email');
+        $needsPassword = ! Schema::hasColumn('users', 'password');
+        $needsRememberToken = ! Schema::hasColumn('users', 'remember_token');
+
+        if (! $needsEmail && ! $needsPassword && ! $needsRememberToken) {
+            return;
+        }
+
+        Schema::table('users', function (Blueprint $table) use ($needsEmail, $needsPassword, $needsRememberToken) {
+            if ($needsEmail) {
+                $table->string('email')->nullable()->unique();
+            }
+
+            if ($needsPassword) {
+                $table->string('password')->nullable();
+            }
+
+            if ($needsRememberToken) {
+                $table->rememberToken();
+            }
         });
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['email', 'password', 'remember_token']);
+        $columns = array_values(array_filter(
+            ['email', 'password', 'remember_token'],
+            fn (string $column) => Schema::hasColumn('users', $column),
+        ));
+
+        if ($columns === []) {
+            return;
+        }
+
+        Schema::table('users', function (Blueprint $table) use ($columns) {
+            $table->dropColumn($columns);
         });
     }
 };

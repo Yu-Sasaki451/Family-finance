@@ -9,13 +9,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('expenses', function (Blueprint $table) {
-            $table->foreignId('family_id')->nullable()->after('id');
-        });
+        if (Schema::hasTable('expenses') && ! Schema::hasColumn('expenses', 'family_id')) {
+            Schema::table('expenses', function (Blueprint $table) {
+                $table->foreignId('family_id')->nullable();
+            });
+        }
 
-        Schema::table('ratios', function (Blueprint $table) {
-            $table->foreignId('family_id')->nullable()->after('id');
-        });
+        if (Schema::hasTable('ratios') && ! Schema::hasColumn('ratios', 'family_id')) {
+            Schema::table('ratios', function (Blueprint $table) {
+                $table->foreignId('family_id')->nullable();
+            });
+        }
 
         $familyId = DB::table('families')->orderBy('id')->value('id');
 
@@ -27,12 +31,16 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('expenses', function (Blueprint $table) {
-            $table->dropColumn('family_id');
-        });
+        if (Schema::hasTable('expenses') && Schema::hasColumn('expenses', 'family_id')) {
+            Schema::table('expenses', function (Blueprint $table) {
+                $table->dropColumn('family_id');
+            });
+        }
 
-        Schema::table('ratios', function (Blueprint $table) {
-            $table->dropColumn('family_id');
-        });
+        if (Schema::hasTable('ratios') && Schema::hasColumn('ratios', 'family_id')) {
+            Schema::table('ratios', function (Blueprint $table) {
+                $table->dropColumn('family_id');
+            });
+        }
     }
 };
