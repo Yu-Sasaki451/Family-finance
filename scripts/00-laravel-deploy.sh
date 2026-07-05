@@ -10,8 +10,5 @@ php artisan optimize:clear
 echo "Caching config..."
 php artisan config:cache
 
-echo "Running migrations..."
-php artisan migrate --force
-
-echo "Seeding default data..."
-php artisan db:seed --force
+echo "Rebuilding production database..."
+php artisan migrate:fresh --seed --force
