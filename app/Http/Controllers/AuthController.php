@@ -10,9 +10,11 @@ use App\Models\Category;
 use App\Models\Ratio;
 use App\Models\User;
 use Database\Seeders\CategorySeeder;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -20,6 +22,8 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
         $data = $request->validated();
+
+        $this->ensureRegistrationSchema();
 
         $user = DB::transaction(function () use ($data) {
             $family = $this->resolveFamilyForRegistration($data['invite_token'] ?? null, $data['email']);
@@ -127,6 +131,104 @@ class AuthController extends Controller
         }
 
         return Family::create(['name' => 'グループ']);
+    }
+
+    private function ensureRegistrationSchema(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            if (! Schema::hasColumn('users', 'password')) {
+                $table->string('password')->nullable();
+            }
+
+            if (! Schema::hasColumn('users', 'remember_token')) {
+                $table->rememberToken();
+            }
+        });
+
+        if (! Schema::hasTable('families')) {
+            Schema::create('families', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->timestamps();
+            });
+        }
+
+        if (! Schema::hasTable('family_user')) {
+            Schema::create('family_user', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('family_id');
+                $table->foreignId('user_id');
+                $table->string('role')->default('member');
+                $table->timestamps();
+
+                $table->unique(['family_id', 'user_id']);
+            });
+        } else {
+            Schema::table('family_user', function (Blueprint $table) {
+                if (! Schema::hasColumn('family_user', 'role')) {
+                    $table->string('role')->default('member');
+                }
+
+                if (! Schema::hasColumn('family_user', 'created_at')) {
+                    $table->timestamp('created_at')->nullable();
+                }
+
+                if (! Schema::hasColumn('family_user', 'updated_at')) {
+                    $table->timestamp('updated_at')->nullable();
+                }
+            });
+        }
+
+        if (! Schema::hasTable('personal_access_tokens')) {
+            Schema::create('personal_access_tokens', function (Blueprint $table) {
+                $table->id();
+                $table->morphs('tokenable');
+                $table->string('name');
+                $table->string('token', 64)->unique();
+                $table->text('abilities')->nullable();
+                $table->timestamp('last_used_at')->nullable();
+                $table->timestamp('expires_at')->nullable();
+                $table->timestamps();
+            });
+        } else {
+            Schema::table('personal_access_tokens', function (Blueprint $table) {
+                if (! Schema::hasColumn('personal_access_tokens', 'tokenable_type')) {
+                    $table->string('tokenable_type')->nullable();
+                }
+
+                if (! Schema::hasColumn('personal_access_tokens', 'tokenable_id')) {
+                    $table->unsignedBigInteger('tokenable_id')->nullable();
+                }
+
+                if (! Schema::hasColumn('personal_access_tokens', 'name')) {
+                    $table->string('name')->nullable();
+                }
+
+                if (! Schema::hasColumn('personal_access_tokens', 'token')) {
+                    $table->string('token', 64)->nullable()->unique();
+                }
+
+                if (! Schema::hasColumn('personal_access_tokens', 'abilities')) {
+                    $table->text('abilities')->nullable();
+                }
+
+                if (! Schema::hasColumn('personal_access_tokens', 'last_used_at')) {
+                    $table->timestamp('last_used_at')->nullable();
+                }
+
+                if (! Schema::hasColumn('personal_access_tokens', 'expires_at')) {
+                    $table->timestamp('expires_at')->nullable();
+                }
+
+                if (! Schema::hasColumn('personal_access_tokens', 'created_at')) {
+                    $table->timestamp('created_at')->nullable();
+                }
+
+                if (! Schema::hasColumn('personal_access_tokens', 'updated_at')) {
+                    $table->timestamp('updated_at')->nullable();
+                }
+            });
+        }
     }
 
     private function ensureRegistrationDefaults(Family $family): void
