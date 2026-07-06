@@ -6,8 +6,8 @@ use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Family;
 use App\Models\Ratio;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class ExpenseService
 {
@@ -29,21 +29,26 @@ class ExpenseService
         $this->ensureFamilyUsers($family, $this->targetUserIds($data));
         $this->ensureCategoryRatios($family, (int) $data['category_id']);
 
-        return DB::transaction(function () use ($data, $family) {
-            $expense = Expense::create([
-                'family_id' => $family->id,
-                'user_id' => $data['user_id'],
-                'category_id' => $data['category_id'],
-                'amount' => $data['amount'],
-                'income' => $data['income'] ?? null,
-                'spent_at' => $data['spent_at'],
-                'note' => $data['note'] ?? null,
-            ]);
+        $expense = Expense::create([
+            'family_id' => $family->id,
+            'user_id' => $data['user_id'],
+            'category_id' => $data['category_id'],
+            'amount' => $data['amount'],
+            'income' => $data['income'] ?? null,
+            'spent_at' => $data['spent_at'],
+            'note' => $data['note'] ?? null,
+        ]);
 
+        try {
             $expense->personal_expenses()->createMany($this->personalExpenses($data));
+        } catch (Throwable $exception) {
+            $expense->personal_expenses()->delete();
+            $expense->delete();
 
-            return $expense;
-        });
+            throw $exception;
+        }
+
+        return $expense->refresh();
     }
 
     public function update(Family $family, Expense $expense, array $data): Expense
@@ -52,31 +57,27 @@ class ExpenseService
         $this->ensureFamilyUsers($family, $this->targetUserIds($data));
         $this->ensureCategoryRatios($family, (int) $data['category_id']);
 
-        DB::transaction(function () use ($data, $expense) {
-            $expense->update([
-                'user_id' => $data['user_id'],
-                'category_id' => $data['category_id'],
-                'amount' => $data['amount'],
-                'income' => $data['income'] ?? null,
-                'spent_at' => $data['spent_at'],
-                'note' => $data['note'] ?? null,
-            ]);
+        $expense->update([
+            'user_id' => $data['user_id'],
+            'category_id' => $data['category_id'],
+            'amount' => $data['amount'],
+            'income' => $data['income'] ?? null,
+            'spent_at' => $data['spent_at'],
+            'note' => $data['note'] ?? null,
+        ]);
 
-            $expense->personal_expenses()->delete();
-            $expense->personal_expenses()->createMany($this->personalExpenses($data));
-        });
+        $expense->personal_expenses()->delete();
+        $expense->personal_expenses()->createMany($this->personalExpenses($data));
 
-        return $expense;
+        return $expense->refresh();
     }
 
     public function delete(Family $family, Expense $expense): void
     {
         $this->ensureFamilyExpense($family->id, $expense);
 
-        DB::transaction(function () use ($expense) {
-            $expense->personal_expenses()->delete();
-            $expense->delete();
-        });
+        $expense->personal_expenses()->delete();
+        $expense->delete();
     }
 
     private function targetUserIds(array $data): array
