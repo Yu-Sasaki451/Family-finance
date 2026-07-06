@@ -12,6 +12,18 @@ class ExpenseApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_unauthenticated_browser_request_redirects_to_login(): void
+    {
+        $this->get('/api/expenses/monthly?month=2026-07')
+            ->assertRedirect('/login');
+    }
+
+    public function test_unauthenticated_json_request_returns_unauthorized(): void
+    {
+        $this->getJson('/api/expenses/monthly?month=2026-07')
+            ->assertUnauthorized();
+    }
+
     public function test_expense_and_personal_expenses_can_be_stored(): void
     {
         [$family, $husband, $wife] = $this->createFamilyUsers();
