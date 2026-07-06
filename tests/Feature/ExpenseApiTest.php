@@ -142,6 +142,38 @@ class ExpenseApiTest extends TestCase
         ]);
     }
 
+    public function test_stored_expense_is_visible_in_monthly_report_and_can_be_deleted(): void
+    {
+        [$family, $husband] = $this->createFamilyUsers(['夫']);
+        $category = Category::create(['name' => '食費']);
+
+        $expenseId = $this->postJson('/api/expenses', [
+            'user_id' => $husband->id,
+            'category_id' => $category->id,
+            'amount' => 123,
+            'spent_at' => '2026-07-06',
+            'note' => '登録確認',
+        ])->assertCreated()
+            ->json('id');
+
+        $this->getJson('/api/expenses/monthly?month=2026-07')
+            ->assertOk()
+            ->assertJsonFragment([
+                'id' => $expenseId,
+                'note' => '登録確認',
+            ]);
+
+        $this->deleteJson("/api/expenses/{$expenseId}")
+            ->assertNoContent();
+
+        $this->getJson('/api/expenses/monthly?month=2026-07')
+            ->assertOk()
+            ->assertJsonMissing([
+                'id' => $expenseId,
+                'note' => '登録確認',
+            ]);
+    }
+
     public function test_personal_expense_total_cannot_exceed_expense_amount(): void
     {
         [$family, $husband, $wife] = $this->createFamilyUsers();
