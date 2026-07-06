@@ -43,6 +43,35 @@ class ExpenseApiTest extends TestCase
         $this->assertDatabaseCount('personal_expenses', 1);
     }
 
+    public function test_expense_can_be_stored_with_browser_string_values_and_empty_optional_fields(): void
+    {
+        [$family, $husband, $wife] = $this->createFamilyUsers();
+        $category = Category::create(['name' => '食費']);
+
+        $this->postJson('/api/expenses', [
+            'user_id' => (string) $husband->id,
+            'category_id' => (string) $category->id,
+            'amount' => '3000',
+            'income' => '',
+            'spent_at' => '2026-06-09',
+            'note' => '',
+            'personal_expenses' => [
+                ['user_id' => $husband->id, 'amount' => '', 'note' => ''],
+                ['user_id' => $wife->id, 'amount' => '', 'note' => ''],
+            ],
+        ])->assertCreated()
+            ->assertJsonFragment(['amount' => 3000]);
+
+        $this->assertDatabaseHas('expenses', [
+            'user_id' => $husband->id,
+            'category_id' => $category->id,
+            'amount' => 3000,
+            'income' => null,
+            'note' => null,
+        ]);
+        $this->assertDatabaseCount('personal_expenses', 0);
+    }
+
     public function test_personal_expense_total_cannot_exceed_expense_amount(): void
     {
         [$family, $husband, $wife] = $this->createFamilyUsers();

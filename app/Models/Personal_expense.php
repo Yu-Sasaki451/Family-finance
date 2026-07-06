@@ -11,6 +11,12 @@ class Personal_expense extends Model
 
     protected $fillable = ['expense_id','user_id','amount','note'];
 
+    protected $casts = [
+        'expense_id' => 'integer',
+        'user_id' => 'integer',
+        'amount' => 'integer',
+    ];
+
     public function user(){
         return $this->belongsTo(User::class);
     }

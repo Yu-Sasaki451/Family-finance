@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Ratio;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -12,7 +13,7 @@ class CategoryApiTest extends TestCase
 
     public function test_category_can_be_displayed_added_updated_and_deleted(): void
     {
-        $this->createFamilyUsers(['夫']);
+        [$family] = $this->createFamilyUsers(['夫']);
         $category = Category::create(['name' => '食費']);
 
         $this->getJson('/api/categories')
@@ -27,6 +28,13 @@ class CategoryApiTest extends TestCase
         $this->putJson("/api/categories/{$category->id}", ['name' => '外食費'])
             ->assertOk()
             ->assertJsonFragment(['name' => '外食費']);
+
+        $this->assertDatabaseHas('ratios', [
+            'family_id' => $family->id,
+            'category_id' => $createdCategory['id'],
+            'ratio' => 0.5,
+        ]);
+        $this->assertSame(1, Ratio::where('category_id', $createdCategory['id'])->count());
 
         $this->deleteJson("/api/categories/{$createdCategory['id']}")
             ->assertNoContent();
