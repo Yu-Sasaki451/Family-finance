@@ -73,9 +73,9 @@ class AuthApiTest extends TestCase
         ]);
     }
 
-    public function test_existing_family_member_can_be_claimed_by_registration(): void
+    public function test_placeholder_family_member_is_not_claimed_by_registration(): void
     {
-        [$family, $husband, $wife] = $this->createFamilyUsers();
+        [$family, $husband] = $this->createFamilyUsers(['夫', '妻']);
 
         $this->postJson('/api/auth/register', [
             'name' => '夫',
@@ -83,16 +83,19 @@ class AuthApiTest extends TestCase
             'password' => 'password',
         ])->assertOk();
 
-        $this->assertDatabaseCount('users', 2);
+        $registeredUser = User::where('email', 'husband@example.com')->first();
+
+        $this->assertDatabaseCount('users', 3);
         $this->assertDatabaseHas('users', [
             'id' => $husband->id,
             'name' => '夫',
-            'email' => 'husband@example.com',
+            'email' => null,
         ]);
         $this->assertDatabaseHas('family_user', [
-            'family_id' => $family->id,
-            'user_id' => $husband->id,
+            'family_id' => $registeredUser->currentFamily()->id,
+            'user_id' => $registeredUser->id,
         ]);
+        $this->assertNotSame($family->id, $registeredUser->currentFamily()->id);
     }
 
     public function test_group_name_can_be_updated(): void

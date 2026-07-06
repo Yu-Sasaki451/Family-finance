@@ -22,27 +22,15 @@ class AuthController extends Controller
 
         $family = $this->resolveFamilyForRegistration($data['invite_token'] ?? null, $data['email']);
 
-        $user = $family->users()
-            ->whereNull('users.email')
-            ->where('users.name', $data['name'])
-            ->first();
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+        ]);
 
-        if ($user) {
-            $user->update([
-                'email' => $data['email'],
-                'password' => $data['password'],
-            ]);
-        } else {
-            $user = User::create([
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'password' => $data['password'],
-            ]);
-
-            $family->users()->syncWithoutDetaching([
-                $user->id => ['role' => 'member'],
-            ]);
-        }
+        $family->users()->syncWithoutDetaching([
+            $user->id => ['role' => 'member'],
+        ]);
 
         $this->ensureRegistrationDefaults($family);
 
@@ -114,14 +102,8 @@ class AuthController extends Controller
             return $invitation->family;
         }
 
-        $hasRegisteredUser = User::whereNotNull('email')->exists();
-
-        if (! $hasRegisteredUser) {
-            return Family::whereHas('users')->orderBy('id')->first()
-                ?? Family::firstOrCreate(['name' => 'グループ']);
-        }
-
-        return Family::create(['name' => 'グループ']);
+        return Family::whereDoesntHave('users')->orderBy('id')->first()
+            ?? Family::create(['name' => 'グループ']);
     }
 
     private function ensureRegistrationDefaults(Family $family): void

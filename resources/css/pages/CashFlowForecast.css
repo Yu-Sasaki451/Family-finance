@@ -98,6 +98,8 @@
 .forecastMonthLabel input,
 .forecastTableRow input,
 .balanceField input {
+    box-sizing: border-box;
+    width: 100%;
     min-width: 0;
     padding: 9px;
     border: 1px solid gray;
@@ -116,6 +118,7 @@
     grid-template-columns: minmax(0, 1fr) 28px;
     align-items: center;
     gap: 6px;
+    min-width: 0;
 }
 
 .forecastAmountField span {
@@ -161,6 +164,7 @@
 }
 
 .forecastMonthName {
+    display: none;
     color: #555;
     font-size: 12px;
     font-weight: bold;
@@ -251,4 +255,7 @@
         min-width: 0;
     }
 
+    .forecastMonthName {
+        display: inline;
+    }
 }
