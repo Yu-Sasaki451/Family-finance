@@ -14,6 +14,25 @@ class ExpenseRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $personalExpenses = collect($this->input('personal_expenses', []))
+            ->map(fn ($item) => [
+                'user_id' => $this->integerValue($item['user_id'] ?? null),
+                'amount' => $this->integerValue($item['amount'] ?? null),
+                'note' => $item['note'] ?? null,
+            ])
+            ->all();
+
+        $this->merge([
+            'user_id' => $this->integerValue($this->input('user_id')),
+            'category_id' => $this->integerValue($this->input('category_id')),
+            'amount' => $this->integerValue($this->input('amount')),
+            'income' => $this->integerValue($this->input('income')),
+            'personal_expenses' => $personalExpenses,
+        ]);
+    }
+
     public function rules(): array
     {
         $family = $this->user()->currentFamily();
@@ -76,5 +95,22 @@ class ExpenseRequest extends FormRequest
                 }
             },
         ];
+    }
+
+    private function integerValue($value)
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_int($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && preg_match('/^-?\d+$/', $value)) {
+            return (int) $value;
+        }
+
+        return $value;
     }
 }

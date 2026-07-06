@@ -1,9 +1,12 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../../css/pages/Expense.css";
 import Header from "../components/Header";
+import { ROUTES } from "../routes/routes";
 
 const Expense = () => {
+    const navigate = useNavigate();
     const [users, setUsers] = useState([]);
     const [categories, setCategories] = useState([]);
     const [personalAmountInputs, setPersonalAmountInputs] = useState({});
@@ -119,16 +122,38 @@ const Expense = () => {
         });
     };
 
+    const cleanAmount = (value) => {
+        return value === "" || value === null ? null : Number(value);
+    };
+
+    const expensePayload = () => {
+        return {
+            ...form,
+            user_id: Number(form.user_id),
+            category_id: Number(form.category_id),
+            amount: cleanAmount(form.amount),
+            income: isElectricity ? cleanAmount(form.income) : null,
+            note: form.note.trim() || null,
+            personal_expenses: form.personal_expenses.map((item) => ({
+                user_id: Number(item.user_id),
+                amount: cleanAmount(item.amount),
+                note: item.note.trim() || null,
+            })),
+        };
+    };
+
     const storeExpense = async (e) => {
         e.preventDefault();
 
         try {
-            await axios.post("/api/expenses", form);
+            const payload = expensePayload();
+
+            await axios.post("/api/expenses", payload);
 
             resetForm();
             setMessage("支出を登録しました。");
             setError("");
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            navigate(`${ROUTES.SUMMARY}?month=${payload.spent_at.slice(0, 7)}`);
         } catch (error) {
             const errors = error.response?.data?.errors;
 

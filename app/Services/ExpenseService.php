@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Family;
+use App\Models\Ratio;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -26,6 +27,7 @@ class ExpenseService
     public function create(Family $family, array $data): Expense
     {
         $this->ensureFamilyUsers($family, $this->targetUserIds($data));
+        $this->ensureCategoryRatios($family, (int) $data['category_id']);
 
         return DB::transaction(function () use ($data, $family) {
             $expense = Expense::create([
@@ -48,6 +50,7 @@ class ExpenseService
     {
         $this->ensureFamilyExpense($family->id, $expense);
         $this->ensureFamilyUsers($family, $this->targetUserIds($data));
+        $this->ensureCategoryRatios($family, (int) $data['category_id']);
 
         DB::transaction(function () use ($data, $expense) {
             $expense->update([
@@ -112,5 +115,38 @@ class ExpenseService
                 'user_id' => 'グループのメンバーを選択してください。',
             ]);
         }
+    }
+
+    private function ensureCategoryRatios(Family $family, int $categoryId): void
+    {
+        $category = Category::find($categoryId);
+
+        if (! $category) {
+            return;
+        }
+
+        $users = $family->users()->orderBy('users.id')->get(['users.id']);
+
+        foreach ($users as $index => $user) {
+            Ratio::firstOrCreate(
+                [
+                    'family_id' => $family->id,
+                    'user_id' => $user->id,
+                    'category_id' => $category->id,
+                ],
+                [
+                    'ratio' => $this->defaultRatio($category->name, $index),
+                ],
+            );
+        }
+    }
+
+    private function defaultRatio(string $categoryName, int $userIndex): float
+    {
+        if ($categoryName === '家ローン') {
+            return $userIndex === 0 ? 0.45 : 0.55;
+        }
+
+        return 0.5;
     }
 }

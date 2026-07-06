@@ -61,7 +61,12 @@ const MonthlyExpenseSummary = ({
     };
 
     useEffect(() => {
-        getMonthlyExpenses(currentMonthOnly ? getCurrentMonth() : "");
+        const params = new URLSearchParams(window.location.search);
+        const queryMonth = params.get("month") ?? "";
+
+        getMonthlyExpenses(
+            currentMonthOnly ? getCurrentMonth() : queryMonth,
+        );
         getOptions();
     }, [currentMonthOnly]);
 
@@ -101,11 +106,17 @@ const MonthlyExpenseSummary = ({
         setSelectedCategoryId(null);
 
         if (!month) {
+            window.history.replaceState(null, "", window.location.pathname);
             clearSelectedMonth();
 
             return;
         }
 
+        window.history.replaceState(
+            null,
+            "",
+            `${window.location.pathname}?month=${month}`,
+        );
         getMonthlyExpenses(month);
     };
 

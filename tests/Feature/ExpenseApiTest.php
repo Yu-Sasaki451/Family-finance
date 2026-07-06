@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Category;
 use App\Models\Expense;
+use App\Models\Ratio;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -70,6 +71,63 @@ class ExpenseApiTest extends TestCase
             'note' => null,
         ]);
         $this->assertDatabaseCount('personal_expenses', 0);
+    }
+
+    public function test_expense_can_be_stored_with_browser_personal_expense_values(): void
+    {
+        [$family, $husband, $wife] = $this->createFamilyUsers();
+        $category = Category::create(['name' => '食費']);
+
+        $this->postJson('/api/expenses', [
+            'user_id' => (string) $husband->id,
+            'category_id' => (string) $category->id,
+            'amount' => '3000',
+            'spent_at' => '2026-06-09',
+            'personal_expenses' => [
+                ['user_id' => $husband->id, 'amount' => '500', 'note' => '夫の分'],
+                ['user_id' => $wife->id, 'amount' => '700', 'note' => '妻の分'],
+            ],
+        ])->assertCreated()
+            ->assertJsonFragment(['amount' => 3000]);
+
+        $this->assertDatabaseHas('personal_expenses', [
+            'user_id' => $husband->id,
+            'amount' => 500,
+            'note' => '夫の分',
+        ]);
+        $this->assertDatabaseHas('personal_expenses', [
+            'user_id' => $wife->id,
+            'amount' => 700,
+            'note' => '妻の分',
+        ]);
+    }
+
+    public function test_missing_category_ratios_are_created_when_expense_is_stored(): void
+    {
+        [$family, $husband, $wife] = $this->createFamilyUsers();
+        $category = Category::create(['name' => '食費']);
+
+        $this->assertSame(0, Ratio::where('category_id', $category->id)->count());
+
+        $this->postJson('/api/expenses', [
+            'user_id' => $husband->id,
+            'category_id' => $category->id,
+            'amount' => 3000,
+            'spent_at' => '2026-06-09',
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('ratios', [
+            'family_id' => $family->id,
+            'user_id' => $husband->id,
+            'category_id' => $category->id,
+            'ratio' => 0.5,
+        ]);
+        $this->assertDatabaseHas('ratios', [
+            'family_id' => $family->id,
+            'user_id' => $wife->id,
+            'category_id' => $category->id,
+            'ratio' => 0.5,
+        ]);
     }
 
     public function test_personal_expense_total_cannot_exceed_expense_amount(): void
