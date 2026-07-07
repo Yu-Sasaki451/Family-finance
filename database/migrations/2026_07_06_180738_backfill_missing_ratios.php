@@ -26,6 +26,8 @@ return new class extends Migration
                     ->orderBy('user_id')
                     ->pluck('user_id');
 
+                $userCount = $users->count();
+
                 foreach ($categories as $category) {
                     foreach ($users as $index => $userId) {
                         $exists = DB::table('ratios')
@@ -44,7 +46,7 @@ return new class extends Migration
                             'family_id' => $family->id,
                             'user_id' => $userId,
                             'category_id' => $category->id,
-                            'ratio' => $this->defaultRatio($category->name, $index),
+                            'ratio' => $this->defaultRatio($category->name, $index, $userCount),
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]);
@@ -58,12 +60,20 @@ return new class extends Migration
         //
     }
 
-    private function defaultRatio(string $categoryName, int $userIndex): float
+    private function defaultRatio(string $categoryName, int $userIndex, int $userCount): float
     {
-        if ($categoryName === '家ローン') {
+        if ($userCount === 1) {
+            return 1.0;
+        }
+
+        if ($userCount === 2 && $categoryName === '家ローン') {
             return $userIndex === 0 ? 0.45 : 0.55;
         }
 
-        return 0.5;
+        $baseRatio = floor(100 / $userCount) / 100;
+
+        return $userIndex === $userCount - 1
+            ? 1 - ($baseRatio * ($userCount - 1))
+            : $baseRatio;
     }
 };

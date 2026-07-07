@@ -128,6 +128,8 @@ class ExpenseService
 
         $users = $family->users()->orderBy('users.id')->get(['users.id']);
 
+        $userCount = $users->count();
+
         foreach ($users as $index => $user) {
             Ratio::firstOrCreate(
                 [
@@ -136,18 +138,26 @@ class ExpenseService
                     'category_id' => $category->id,
                 ],
                 [
-                    'ratio' => $this->defaultRatio($category->name, $index),
+                    'ratio' => $this->defaultRatio($category->name, $index, $userCount),
                 ],
             );
         }
     }
 
-    private function defaultRatio(string $categoryName, int $userIndex): float
+    private function defaultRatio(string $categoryName, int $userIndex, int $userCount): float
     {
-        if ($categoryName === '家ローン') {
+        if ($userCount === 1) {
+            return 1.0;
+        }
+
+        if ($userCount === 2 && $categoryName === '家ローン') {
             return $userIndex === 0 ? 0.45 : 0.55;
         }
 
-        return 0.5;
+        $baseRatio = floor(100 / $userCount) / 100;
+
+        return $userIndex === $userCount - 1
+            ? 1 - ($baseRatio * ($userCount - 1))
+            : $baseRatio;
     }
 }

@@ -115,29 +115,52 @@ class AuthController extends Controller
         $users = $family->users()->orderBy('users.id')->get(['users.id']);
         $categories = Category::orderBy('id')->get(['id', 'name']);
 
+        $userCount = $users->count();
+        $userIds = $users->pluck('id');
+
         foreach ($categories as $category) {
+            $existingRatios = Ratio::where('family_id', $family->id)
+                ->where('category_id', $category->id)
+                ->whereIn('user_id', $userIds)
+                ->get();
+            $shouldResetRatios = $existingRatios->count() !== $userCount
+                || abs($existingRatios->sum('ratio') - 1) > 0.001;
+
             foreach ($users as $index => $user) {
-                Ratio::firstOrCreate(
-                    [
-                        'family_id' => $family->id,
-                        'user_id' => $user->id,
-                        'category_id' => $category->id,
-                    ],
-                    [
-                        'ratio' => $this->defaultRatio($category->name, $index),
-                    ],
-                );
+                $attributes = [
+                    'family_id' => $family->id,
+                    'user_id' => $user->id,
+                    'category_id' => $category->id,
+                ];
+                $values = [
+                    'ratio' => $this->defaultRatio($category->name, $index, $userCount),
+                ];
+
+                if ($shouldResetRatios) {
+                    Ratio::updateOrCreate($attributes, $values);
+                    continue;
+                }
+
+                Ratio::firstOrCreate($attributes, $values);
             }
         }
     }
 
-    private function defaultRatio(string $categoryName, int $userIndex): float
+    private function defaultRatio(string $categoryName, int $userIndex, int $userCount): float
     {
-        if ($categoryName === '家ローン') {
+        if ($userCount === 1) {
+            return 1.0;
+        }
+
+        if ($userCount === 2 && $categoryName === '家ローン') {
             return $userIndex === 0 ? 0.45 : 0.55;
         }
 
-        return 0.5;
+        $baseRatio = floor(100 / $userCount) / 100;
+
+        return $userIndex === $userCount - 1
+            ? 1 - ($baseRatio * ($userCount - 1))
+            : $baseRatio;
     }
 
     private function respondWithToken(User $user)

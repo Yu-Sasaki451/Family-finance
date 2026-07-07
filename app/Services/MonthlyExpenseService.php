@@ -91,7 +91,15 @@ class MonthlyExpenseService
 
     private function calculateSettlement($expenses, $users): array
     {
-        if ($users->count() !== 2) {
+        if ($users->count() === 0) {
+            return [
+                'error' => '精算対象のメンバーがいません。',
+                'users' => [],
+                'transfer' => null,
+            ];
+        }
+
+        if ($users->count() > 2) {
             return [
                 'error' => '精算は2人の場合のみ計算できます。',
                 'users' => [],

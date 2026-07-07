@@ -137,6 +137,39 @@ class MonthlyExpenseApiTest extends TestCase
             ]);
     }
 
+    public function test_single_user_monthly_report_does_not_show_settlement_error(): void
+    {
+        [$family, $user] = $this->createFamilyUsers(['夫']);
+        $category = Category::create(['name' => '食費']);
+
+        Ratio::create([
+            'family_id' => $family->id,
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'ratio' => 1.0,
+        ]);
+
+        Expense::create([
+            'family_id' => $family->id,
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'amount' => 2000,
+            'spent_at' => '2026-06-09',
+            'note' => null,
+        ]);
+
+        $this->getJson('/api/expenses/monthly?month=2026-06')
+            ->assertOk()
+            ->assertJsonPath('settlement.error', null)
+            ->assertJsonPath('settlement.transfer', null)
+            ->assertJsonFragment([
+                'name' => '夫',
+                'paid' => 2000,
+                'burden' => 2000,
+                'difference' => 0,
+            ]);
+    }
+
     public function test_personal_expenses_are_included_in_settlement(): void
     {
         [$family, $husband, $wife] = $this->createFamilyUsers();

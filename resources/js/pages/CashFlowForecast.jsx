@@ -46,6 +46,22 @@ const emptyItem = (months) => ({
     amounts: emptyAmounts(months),
 });
 
+const emptySimulationItem = () => ({
+    title: "",
+    amount: "",
+});
+
+const emptySimulation = () => ({
+    incomes: [emptySimulationItem()],
+    fixed_expenses: [emptySimulationItem()],
+    variable_expenses: [emptySimulationItem()],
+});
+
+const emptySimulations = () => ({
+    personal: emptySimulation(),
+    group: emptySimulation(),
+});
+
 const alignAmounts = (amounts, months) => {
     return months.map((month, index) => {
         const amount = amounts.find((item) => item.month === month)?.amount;
@@ -127,9 +143,14 @@ const cleanItems = (items, fixedAmount = false) => {
 };
 
 const CashFlowForecast = () => {
+    const [mode, setMode] = useState("simulation");
+    const [simulationScope, setSimulationScope] = useState("personal");
     const [form, setForm] = useState(emptyForm("personal"));
+    const [simulations, setSimulations] = useState(emptySimulations());
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+
+    const simulation = simulations[simulationScope];
 
     const months = useMemo(
         () => buildMonths(form.start_month),
@@ -213,6 +234,57 @@ const CashFlowForecast = () => {
             ...form,
             current_balance: value,
         });
+    };
+
+    const changeSimulationItem = (type, itemIndex, field, value) => {
+        setSimulations((current) => {
+            const currentSimulation = current[simulationScope];
+
+            return {
+                ...current,
+                [simulationScope]: {
+                    ...currentSimulation,
+                    [type]: currentSimulation[type].map((item, index) =>
+                        index === itemIndex
+                            ? { ...item, [field]: value }
+                            : item,
+                    ),
+                },
+            };
+        });
+    };
+
+    const addSimulationItem = (type) => {
+        setSimulations((current) => {
+            const currentSimulation = current[simulationScope];
+
+            return {
+                ...current,
+                [simulationScope]: {
+                    ...currentSimulation,
+                    [type]: [
+                        ...currentSimulation[type],
+                        emptySimulationItem(),
+                    ],
+                },
+            };
+        });
+    };
+
+    const removeSimulationItem = (type, itemIndex) => {
+        const nextItems = simulation[type].filter(
+            (_, index) => index !== itemIndex,
+        );
+
+        setSimulations((current) => ({
+            ...current,
+            [simulationScope]: {
+                ...current[simulationScope],
+                [type]: nextItems.length
+                    ? nextItems
+                    : [emptySimulationItem()],
+            },
+        }));
     };
 
     const changeItemTitle = (type, itemIndex, value) => {
@@ -305,6 +377,23 @@ const CashFlowForecast = () => {
         return totals;
     }, []);
 
+    const sumSimulationItems = (items) => {
+        return items.reduce(
+            (total, item) => total + Number(item.amount || 0),
+            0,
+        );
+    };
+
+    const simulationTotal = {
+        income: sumSimulationItems(simulation.incomes),
+        fixedExpense: sumSimulationItems(simulation.fixed_expenses),
+        variableExpense: sumSimulationItems(simulation.variable_expenses),
+    };
+    simulationTotal.remaining =
+        simulationTotal.income -
+        simulationTotal.fixedExpense -
+        simulationTotal.variableExpense;
+
     const getErrorMessage = (requestError) => {
         const errors = requestError.response?.data?.errors;
 
@@ -336,6 +425,86 @@ const CashFlowForecast = () => {
             setError(getErrorMessage(requestError));
             setMessage("");
         }
+    };
+
+    const renderSimulationRows = (type) => {
+        const labels = {
+            incomes: "収入",
+            fixed_expenses: "固定費",
+            variable_expenses: "変動費",
+        };
+        const title = labels[type];
+
+        return (
+            <section className="forecastSection">
+                <div className="forecastSectionHeader">
+                    <h2>{title}</h2>
+                    <button
+                        type="button"
+                        onClick={() => addSimulationItem(type)}
+                    >
+                        行を追加
+                    </button>
+                </div>
+
+                <div className="forecastTable">
+                    <div className="forecastTableHeader simulationTableRow">
+                        <span>見出し名</span>
+                        <span>金額</span>
+                        <span>操作</span>
+                    </div>
+
+                    {simulation[type].map((item, itemIndex) => (
+                        <div
+                            className="forecastTableRow simulationTableRow"
+                            key={itemIndex}
+                        >
+                            <input
+                                type="text"
+                                placeholder={`${title}の見出し名`}
+                                value={item.title}
+                                onChange={(e) =>
+                                    changeSimulationItem(
+                                        type,
+                                        itemIndex,
+                                        "title",
+                                        e.target.value,
+                                    )
+                                }
+                            />
+                            <label className="forecastMonthAmount">
+                                <div className="forecastAmountField">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="0"
+                                        value={item.amount}
+                                        onChange={(e) =>
+                                            changeSimulationItem(
+                                                type,
+                                                itemIndex,
+                                                "amount",
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                    <span>円</span>
+                                </div>
+                            </label>
+                            <button
+                                className="forecastDeleteButton"
+                                type="button"
+                                onClick={() =>
+                                    removeSimulationItem(type, itemIndex)
+                                }
+                            >
+                                削除
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </section>
+        );
     };
 
     const renderExpenseRows = (type) => {
@@ -453,129 +622,232 @@ const CashFlowForecast = () => {
                 {message && <p className="forecastMessage">{message}</p>}
                 {error && <p className="forecastError">{error}</p>}
 
-                <form onSubmit={saveForecast}>
-                    <section className="forecastSection">
-                        <h2>計算方法</h2>
-                        <div className="forecastScopeButtons">
-                            <button
-                                className={
-                                    form.scope === "personal"
-                                        ? "selectedScopeButton"
-                                        : ""
-                                }
-                                type="button"
-                                onClick={() => changeScope("personal")}
-                            >
-                                個人で計算
-                            </button>
-                            <button
-                                className={
-                                    form.scope === "group"
-                                        ? "selectedScopeButton"
-                                        : ""
-                                }
-                                type="button"
-                                onClick={() => changeScope("group")}
-                            >
-                                グループで計算
-                            </button>
-                        </div>
-                    </section>
+                <section className="forecastModeSection">
+                    <button
+                        className={mode === "simulation" ? "selectedMode" : ""}
+                        type="button"
+                        onClick={() => setMode("simulation")}
+                    >
+                        1ヶ月シミュレーション
+                    </button>
+                    <button
+                        className={mode === "forecast" ? "selectedMode" : ""}
+                        type="button"
+                        onClick={() => setMode("forecast")}
+                    >
+                        3ヶ月予測
+                    </button>
+                </section>
 
-                    <section className="forecastSection">
-                        <label className="forecastMonthLabel">
-                            開始月
-                            <input
-                                type="month"
-                                value={form.start_month}
-                                onChange={(e) =>
-                                    changeStartMonth(e.target.value)
-                                }
-                            />
-                        </label>
-                    </section>
+                {mode === "simulation" && (
+                    <>
+                        <section className="forecastSection">
+                            <h2>計算方法</h2>
+                            <div className="forecastScopeButtons">
+                                <button
+                                    className={
+                                        simulationScope === "personal"
+                                            ? "selectedScopeButton"
+                                            : ""
+                                    }
+                                    type="button"
+                                    onClick={() =>
+                                        setSimulationScope("personal")
+                                    }
+                                >
+                                    個人で計算
+                                </button>
+                                <button
+                                    className={
+                                        simulationScope === "group"
+                                            ? "selectedScopeButton"
+                                            : ""
+                                    }
+                                    type="button"
+                                    onClick={() => setSimulationScope("group")}
+                                >
+                                    グループで計算
+                                </button>
+                            </div>
+                        </section>
 
-                    <section className="forecastSection">
-                        <h2>現在残高</h2>
-                        <label className="balanceField">
-                            {form.scope === "group"
-                                ? "グループで使える金額"
-                                : "自分が使える金額"}
-                            <div className="forecastAmountField">
+                        {renderSimulationRows("incomes")}
+                        {renderSimulationRows("fixed_expenses")}
+                        {renderSimulationRows("variable_expenses")}
+
+                        <section className="forecastSection">
+                            <h2>計算結果</h2>
+                            <div className="simulationSummary">
+                                <span>
+                                    収入合計：
+                                    {formatAmount(simulationTotal.income)}
+                                </span>
+                                <span>
+                                    固定費合計：
+                                    {formatAmount(
+                                        simulationTotal.fixedExpense,
+                                    )}
+                                </span>
+                                <span>
+                                    変動費合計：
+                                    {formatAmount(
+                                        simulationTotal.variableExpense,
+                                    )}
+                                </span>
+                                <b
+                                    className={
+                                        simulationTotal.remaining < 0
+                                            ? "minusResult"
+                                            : ""
+                                    }
+                                >
+                                    手元に残るお金：
+                                    {formatAmount(simulationTotal.remaining)}
+                                </b>
+                            </div>
+                        </section>
+                    </>
+                )}
+
+                {mode === "forecast" && (
+                    <form onSubmit={saveForecast}>
+                        <section className="forecastSection">
+                            <h2>計算方法</h2>
+                            <div className="forecastScopeButtons">
+                                <button
+                                    className={
+                                        form.scope === "personal"
+                                            ? "selectedScopeButton"
+                                            : ""
+                                    }
+                                    type="button"
+                                    onClick={() => changeScope("personal")}
+                                >
+                                    個人で計算
+                                </button>
+                                <button
+                                    className={
+                                        form.scope === "group"
+                                            ? "selectedScopeButton"
+                                            : ""
+                                    }
+                                    type="button"
+                                    onClick={() => changeScope("group")}
+                                >
+                                    グループで計算
+                                </button>
+                            </div>
+                        </section>
+
+                        <section className="forecastSection">
+                            <label className="forecastMonthLabel">
+                                開始月
                                 <input
-                                    type="number"
-                                    min="0"
-                                    placeholder="0"
-                                    value={form.current_balance}
+                                    type="month"
+                                    value={form.start_month}
                                     onChange={(e) =>
-                                        changeCurrentBalance(e.target.value)
+                                        changeStartMonth(e.target.value)
                                     }
                                 />
-                                <span>円</span>
-                            </div>
-                        </label>
-                    </section>
+                            </label>
+                        </section>
 
-                    {renderExpenseRows("fixed_incomes")}
-                    {renderExpenseRows("variable_incomes")}
-                    {renderExpenseRows("fixed_expenses")}
-                    {renderExpenseRows("variable_expenses")}
-
-                    <section className="forecastSection">
-                        <h2>計算結果</h2>
-                        <div className="resultGrid">
-                            {monthTotals.map((total) => (
-                                <div className="resultCard" key={total.month}>
-                                    <strong>{formatMonth(total.month)}</strong>
-                                    <span>
-                                        月初残高：
-                                        {formatAmount(total.startBalance)}
-                                    </span>
-                                    <span>
-                                        固定収入：
-                                        {formatAmount(total.fixedIncomeTotal)}
-                                    </span>
-                                    <span>
-                                        変動収入：
-                                        {formatAmount(total.variableIncomeTotal)}
-                                    </span>
-                                    <span>
-                                        収入合計：
-                                        {formatAmount(total.incomeTotal)}
-                                    </span>
-                                    <span>
-                                        固定支出：
-                                        {formatAmount(total.fixedTotal)}
-                                    </span>
-                                    <span>
-                                        変動支出：
-                                        {formatAmount(total.variableTotal)}
-                                    </span>
-                                    <span>
-                                        支出合計：
-                                        {formatAmount(total.expenseTotal)}
-                                    </span>
-                                    <b
-                                        className={
-                                            total.remaining < 0
-                                                ? "minusResult"
-                                                : ""
+                        <section className="forecastSection">
+                            <h2>現在残高</h2>
+                            <label className="balanceField">
+                                {form.scope === "group"
+                                    ? "グループで使える金額"
+                                    : "自分が使える金額"}
+                                <div className="forecastAmountField">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        placeholder="0"
+                                        value={form.current_balance}
+                                        onChange={(e) =>
+                                            changeCurrentBalance(
+                                                e.target.value,
+                                            )
                                         }
-                                    >
-                                        月末予想残高：
-                                        {formatAmount(total.remaining)}
-                                    </b>
+                                    />
+                                    <span>円</span>
                                 </div>
-                            ))}
-                        </div>
-                    </section>
+                            </label>
+                        </section>
 
-                    <div className="forecastSaveArea">
-                        <button className="forecastSaveButton" type="submit">
-                            保存
-                        </button>
-                    </div>
-                </form>
+                        {renderExpenseRows("fixed_incomes")}
+                        {renderExpenseRows("variable_incomes")}
+                        {renderExpenseRows("fixed_expenses")}
+                        {renderExpenseRows("variable_expenses")}
+
+                        <section className="forecastSection">
+                            <h2>計算結果</h2>
+                            <div className="resultGrid">
+                                {monthTotals.map((total) => (
+                                    <div
+                                        className="resultCard"
+                                        key={total.month}
+                                    >
+                                        <strong>
+                                            {formatMonth(total.month)}
+                                        </strong>
+                                        <span>
+                                            月初残高：
+                                            {formatAmount(total.startBalance)}
+                                        </span>
+                                        <span>
+                                            固定収入：
+                                            {formatAmount(
+                                                total.fixedIncomeTotal,
+                                            )}
+                                        </span>
+                                        <span>
+                                            変動収入：
+                                            {formatAmount(
+                                                total.variableIncomeTotal,
+                                            )}
+                                        </span>
+                                        <span>
+                                            収入合計：
+                                            {formatAmount(total.incomeTotal)}
+                                        </span>
+                                        <span>
+                                            固定支出：
+                                            {formatAmount(total.fixedTotal)}
+                                        </span>
+                                        <span>
+                                            変動支出：
+                                            {formatAmount(total.variableTotal)}
+                                        </span>
+                                        <span>
+                                            支出合計：
+                                            {formatAmount(total.expenseTotal)}
+                                        </span>
+                                        <b
+                                            className={
+                                                total.remaining < 0
+                                                    ? "minusResult"
+                                                    : ""
+                                            }
+                                        >
+                                            月末予想残高：
+                                            {formatAmount(total.remaining)}
+                                        </b>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+
+                        <div className="forecastSaveArea">
+                            <button
+                                className="forecastSaveButton"
+                                type="submit"
+                            >
+                                保存
+                            </button>
+                        </div>
+                    </form>
+                )}
             </main>
         </>
     );

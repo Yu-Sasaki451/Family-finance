@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Family;
+use App\Models\Ratio;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -28,6 +29,9 @@ class AuthApiTest extends TestCase
         $this->assertDatabaseCount('families', 1);
         $this->assertDatabaseCount('categories', 8);
         $this->assertDatabaseCount('ratios', 8);
+        Ratio::query()->each(function (Ratio $ratio) {
+            $this->assertEqualsWithDelta(1.0, (float) $ratio->ratio, 0.001);
+        });
     }
 
     public function test_user_can_login(): void
@@ -71,6 +75,14 @@ class AuthApiTest extends TestCase
             'family_id' => $family->id,
             'user_id' => $wife->id,
         ]);
+
+        Ratio::where('family_id', $family->id)
+            ->get()
+            ->groupBy('category_id')
+            ->each(function ($ratios) {
+                $this->assertCount(2, $ratios);
+                $this->assertEqualsWithDelta(1.0, $ratios->sum('ratio'), 0.001);
+            });
     }
 
     public function test_placeholder_family_member_is_not_claimed_by_registration(): void

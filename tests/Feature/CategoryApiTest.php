@@ -32,7 +32,7 @@ class CategoryApiTest extends TestCase
         $this->assertDatabaseHas('ratios', [
             'family_id' => $family->id,
             'category_id' => $createdCategory['id'],
-            'ratio' => 0.5,
+            'ratio' => 1.0,
         ]);
         $this->assertSame(1, Ratio::where('category_id', $createdCategory['id'])->count());
 

@@ -22,6 +22,8 @@ class RatioSeeder extends Seeder
                     ->orderBy('user_id')
                     ->pluck('user_id');
 
+                $userCount = $users->count();
+
                 foreach ($categories as $category) {
                     foreach ($users as $index => $userId) {
                         DB::table('ratios')->updateOrInsert(
@@ -31,7 +33,7 @@ class RatioSeeder extends Seeder
                                 'category_id' => $category->id,
                             ],
                             [
-                                'ratio' => $this->defaultRatio($category->name, $index),
+                                'ratio' => $this->defaultRatio($category->name, $index, $userCount),
                                 'updated_at' => now(),
                             ],
                         );
@@ -40,12 +42,20 @@ class RatioSeeder extends Seeder
             });
     }
 
-    private function defaultRatio(string $categoryName, int $userIndex): float
+    private function defaultRatio(string $categoryName, int $userIndex, int $userCount): float
     {
-        if ($categoryName === '家ローン') {
+        if ($userCount === 1) {
+            return 1.0;
+        }
+
+        if ($userCount === 2 && $categoryName === '家ローン') {
             return $userIndex === 0 ? 0.45 : 0.55;
         }
 
-        return 0.5;
+        $baseRatio = floor(100 / $userCount) / 100;
+
+        return $userIndex === $userCount - 1
+            ? 1 - ($baseRatio * ($userCount - 1))
+            : $baseRatio;
     }
 }
