@@ -48,5 +48,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/expenses/{expense}', [ExpenseController::class, 'destroy']);
 
     Route::get('/cash-flow-forecast', [CashFlowForecastController::class, 'show']);
+    Route::put('/cash-flow-forecast/simulation', [CashFlowForecastController::class, 'updateSimulation']);
     Route::put('/cash-flow-forecast', [CashFlowForecastController::class, 'update']);
 });

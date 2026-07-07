@@ -185,6 +185,100 @@ class CashFlowForecastApiTest extends TestCase
         ]);
     }
 
+    public function test_cash_flow_simulation_can_be_saved(): void
+    {
+        [$family, $user] = $this->createFamilyUsers(['夫']);
+
+        $this->putJson('/api/cash-flow-forecast/simulation', [
+            'scope' => 'personal',
+            'incomes' => [
+                ['title' => '給料', 'amount' => 300000],
+            ],
+            'fixed_expenses' => [
+                ['title' => '家賃', 'amount' => 90000],
+            ],
+            'variable_expenses' => [
+                ['title' => '生活費', 'amount' => 70000],
+            ],
+        ])->assertOk()
+            ->assertJsonPath('family_id', $family->id)
+            ->assertJsonPath('scope', 'personal')
+            ->assertJsonPath('owner_id', $user->id)
+            ->assertJsonPath('simulation_incomes.0.title', '給料')
+            ->assertJsonPath('simulation_fixed_expenses.0.amount', 90000)
+            ->assertJsonPath('simulation_variable_expenses.0.title', '生活費');
+
+        $this->getJson('/api/cash-flow-forecast?scope=personal')
+            ->assertOk()
+            ->assertJsonPath('simulation_incomes.0.amount', 300000)
+            ->assertJsonPath('simulation_fixed_expenses.0.title', '家賃')
+            ->assertJsonPath('simulation_variable_expenses.0.amount', 70000);
+    }
+
+    public function test_personal_and_group_simulations_are_saved_separately(): void
+    {
+        [$family, $user] = $this->createFamilyUsers(['夫']);
+
+        $this->putJson('/api/cash-flow-forecast/simulation', [
+            'scope' => 'personal',
+            'incomes' => [
+                ['title' => '個人の給料', 'amount' => 300000],
+            ],
+            'fixed_expenses' => [],
+            'variable_expenses' => [],
+        ])->assertOk()
+            ->assertJsonPath('owner_id', $user->id);
+
+        $this->putJson('/api/cash-flow-forecast/simulation', [
+            'scope' => 'group',
+            'incomes' => [
+                ['title' => 'グループ収入', 'amount' => 500000],
+            ],
+            'fixed_expenses' => [],
+            'variable_expenses' => [],
+        ])->assertOk()
+            ->assertJsonPath('owner_id', 0);
+
+        $this->getJson('/api/cash-flow-forecast?scope=personal')
+            ->assertOk()
+            ->assertJsonPath('simulation_incomes.0.title', '個人の給料');
+
+        $this->getJson('/api/cash-flow-forecast?scope=group')
+            ->assertOk()
+            ->assertJsonPath('simulation_incomes.0.title', 'グループ収入');
+    }
+
+    public function test_cash_flow_simulation_save_does_not_overwrite_forecast(): void
+    {
+        [$family, $user] = $this->createFamilyUsers(['夫']);
+
+        $this->putJson('/api/cash-flow-forecast', [
+            'scope' => 'personal',
+            'start_month' => '2026-07',
+            'current_balance' => 200000,
+            'fixed_incomes' => [],
+            'variable_incomes' => [],
+            'fixed_expenses' => [],
+            'variable_expenses' => [],
+        ])->assertOk();
+
+        $this->putJson('/api/cash-flow-forecast/simulation', [
+            'scope' => 'personal',
+            'incomes' => [
+                ['title' => '給料', 'amount' => 300000],
+            ],
+            'fixed_expenses' => [],
+            'variable_expenses' => [],
+        ])->assertOk();
+
+        $this->getJson('/api/cash-flow-forecast?scope=personal')
+            ->assertOk()
+            ->assertJsonPath('owner_id', $user->id)
+            ->assertJsonPath('start_month', '2026-07')
+            ->assertJsonPath('current_balance', 200000)
+            ->assertJsonPath('simulation_incomes.0.title', '給料');
+    }
+
     public function test_cash_flow_forecast_requires_item_title_when_amount_is_sent(): void
     {
         [$family, $user] = $this->createFamilyUsers(['夫']);

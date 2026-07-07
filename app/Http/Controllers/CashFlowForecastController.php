@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CashFlowForecastRequest;
+use App\Http\Requests\CashFlowSimulationRequest;
 use App\Models\CashFlowForecast;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,6 +33,9 @@ class CashFlowForecastController extends Controller
             'variable_incomes' => [],
             'fixed_expenses' => [],
             'variable_expenses' => [],
+            'simulation_incomes' => [],
+            'simulation_fixed_expenses' => [],
+            'simulation_variable_expenses' => [],
         ];
     }
 
@@ -60,6 +64,32 @@ class CashFlowForecastController extends Controller
         return response()->json($forecast);
     }
 
+    public function updateSimulation(CashFlowSimulationRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $family = $request->user()->currentFamily();
+        $ownerId = $this->ownerId($data['scope'], $request->user()->id);
+
+        $forecast = CashFlowForecast::firstOrNew([
+            'family_id' => $family->id,
+            'scope' => $data['scope'],
+            'owner_id' => $ownerId,
+        ]);
+
+        if (! $forecast->exists) {
+            $forecast->fill($this->defaultForecastData($data['scope']));
+        }
+
+        $forecast->fill([
+            'simulation_incomes' => $data['incomes'],
+            'simulation_fixed_expenses' => $data['fixed_expenses'],
+            'simulation_variable_expenses' => $data['variable_expenses'],
+        ]);
+        $forecast->save();
+
+        return response()->json($forecast);
+    }
+
     private function scope(?string $scope): string
     {
         return in_array($scope, ['personal', 'group'], true)
@@ -80,7 +110,20 @@ class CashFlowForecastController extends Controller
             ->map(fn ($index) => now()
                 ->setDate($year, $month, 1)
                 ->addMonthsNoOverflow($index)
-                ->format('Y-m'))
+            ->format('Y-m'))
             ->all();
+    }
+
+    private function defaultForecastData(string $scope): array
+    {
+        return [
+            'scope' => $scope,
+            'start_month' => now()->format('Y-m'),
+            'current_balance' => 0,
+            'fixed_incomes' => [],
+            'variable_incomes' => [],
+            'fixed_expenses' => [],
+            'variable_expenses' => [],
+        ];
     }
 }

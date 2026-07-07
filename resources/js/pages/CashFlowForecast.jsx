@@ -99,6 +99,17 @@ const alignItems = (items, months, fixedAmount = false) => {
     }));
 };
 
+const alignSimulationItems = (items = []) => {
+    if (!items.length) {
+        return [emptySimulationItem()];
+    }
+
+    return items.map((item) => ({
+        title: item.title ?? "",
+        amount: item.amount ?? "",
+    }));
+};
+
 const emptyForm = (scope) => {
     const startMonth = getCurrentMonth();
     const months = buildMonths(startMonth);
@@ -139,6 +150,17 @@ const cleanItems = (items, fixedAmount = false) => {
             month: amount.month,
             amount: cleanAmount(amount.amount),
         })),
+    }));
+};
+
+const simulationRowHasValue = (item) => {
+    return item.title.trim() !== "" || String(item.amount ?? "") !== "";
+};
+
+const cleanSimulationItems = (items) => {
+    return items.filter(simulationRowHasValue).map((item) => ({
+        title: item.title,
+        amount: cleanAmount(item.amount),
     }));
 };
 
@@ -188,18 +210,65 @@ const CashFlowForecast = () => {
                     forecastMonths,
                 ),
             });
+            setSimulations((current) => ({
+                ...current,
+                [scope]: {
+                    incomes: alignSimulationItems(
+                        response.data.simulation_incomes ?? [],
+                    ),
+                    fixed_expenses: alignSimulationItems(
+                        response.data.simulation_fixed_expenses ?? [],
+                    ),
+                    variable_expenses: alignSimulationItems(
+                        response.data.simulation_variable_expenses ?? [],
+                    ),
+                },
+            }));
         } catch {
             setForm((current) => ({
                 ...emptyForm(scope),
                 current_balance:
                     current.scope === scope ? current.current_balance : "",
             }));
+            setSimulations((current) => ({
+                ...current,
+                [scope]: emptySimulation(),
+            }));
             setError("");
+        }
+    };
+
+    const getSimulation = async (scope) => {
+        try {
+            const response = await axios.get("/api/cash-flow-forecast", {
+                params: { scope },
+            });
+
+            setSimulations((current) => ({
+                ...current,
+                [scope]: {
+                    incomes: alignSimulationItems(
+                        response.data.simulation_incomes ?? [],
+                    ),
+                    fixed_expenses: alignSimulationItems(
+                        response.data.simulation_fixed_expenses ?? [],
+                    ),
+                    variable_expenses: alignSimulationItems(
+                        response.data.simulation_variable_expenses ?? [],
+                    ),
+                },
+            }));
+        } catch {
+            setSimulations((current) => ({
+                ...current,
+                [scope]: emptySimulation(),
+            }));
         }
     };
 
     useEffect(() => {
         getForecast("personal");
+        getSimulation("group");
     }, []);
 
     const changeScope = (scope) => {
@@ -421,6 +490,28 @@ const CashFlowForecast = () => {
             setMessage("収支計算を保存しました。");
             setError("");
             await getForecast();
+        } catch (requestError) {
+            setError(getErrorMessage(requestError));
+            setMessage("");
+        }
+    };
+
+    const saveSimulation = async () => {
+        try {
+            await axios.put("/api/cash-flow-forecast/simulation", {
+                scope: simulationScope,
+                incomes: cleanSimulationItems(simulation.incomes),
+                fixed_expenses: cleanSimulationItems(
+                    simulation.fixed_expenses,
+                ),
+                variable_expenses: cleanSimulationItems(
+                    simulation.variable_expenses,
+                ),
+            });
+
+            setMessage("1ヶ月シミュレーションを保存しました。");
+            setError("");
+            await getSimulation(simulationScope);
         } catch (requestError) {
             setError(getErrorMessage(requestError));
             setMessage("");
@@ -706,6 +797,16 @@ const CashFlowForecast = () => {
                                 </b>
                             </div>
                         </section>
+
+                        <div className="forecastSaveArea">
+                            <button
+                                className="forecastSaveButton"
+                                type="button"
+                                onClick={saveSimulation}
+                            >
+                                保存
+                            </button>
+                        </div>
                     </>
                 )}
 

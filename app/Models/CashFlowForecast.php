@@ -19,6 +19,9 @@ class CashFlowForecast extends Model
         'variable_incomes',
         'fixed_expenses',
         'variable_expenses',
+        'simulation_incomes',
+        'simulation_fixed_expenses',
+        'simulation_variable_expenses',
     ];
 
     protected $casts = [
@@ -26,6 +29,9 @@ class CashFlowForecast extends Model
         'variable_incomes' => 'array',
         'fixed_expenses' => 'array',
         'variable_expenses' => 'array',
+        'simulation_incomes' => 'array',
+        'simulation_fixed_expenses' => 'array',
+        'simulation_variable_expenses' => 'array',
     ];
 
     public function family()
