@@ -601,7 +601,7 @@ const MonthlyExpenseSummary = ({
                                                                 0,
                                                         ) > 0 && (
                                                             <small className="categoryPersonalTotal">
-                                                                個人分{" "}
+                                                                個人分合計:{" "}
                                                                 {formatAmount(
                                                                     categoryTotal.personal_total,
                                                                 )}
@@ -621,7 +621,7 @@ const MonthlyExpenseSummary = ({
                                                             categoryTotal.category_id,
                                                         )
                                                             ? "詳細を閉じる"
-                                                            : "詳細を見る"}
+                                                            : "詳細・編集"}
                                                     </button>
                                                 </div>
 
