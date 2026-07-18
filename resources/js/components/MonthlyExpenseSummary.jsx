@@ -596,15 +596,14 @@ const MonthlyExpenseSummary = ({
                                                                 summaryAmount(categoryTotal),
                                                             )}
                                                         </strong>
-                                                        {Number(
-                                                            categoryTotal.personal_total ??
-                                                                0,
-                                                        ) > 0 && (
+                                                        {categoryTotal.personal_totals
+                                                            ?.length > 0 && (
                                                             <small className="categoryPersonalTotal">
-                                                                個人分合計:{" "}
-                                                                {formatAmount(
-                                                                    categoryTotal.personal_total,
-                                                                )}
+                                                                個人分:{" "}
+                                                                {categoryTotal.personal_totals.map(
+                                                                    (item) =>
+                                                                        `${item.user} ${formatAmount(item.amount)}`,
+                                                                ).join(" / ")}
                                                             </small>
                                                         )}
                                                     </div>

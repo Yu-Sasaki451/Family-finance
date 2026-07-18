@@ -120,6 +120,10 @@ class MonthlyExpenseApiTest extends TestCase
             ->assertJsonPath('months.0.shared_total', 11000)
             ->assertJsonPath('months.0.total', 11000)
             ->assertJsonPath('category_totals.0.personal_total', 2000)
+            ->assertJsonPath('category_totals.0.personal_totals.0.user', '夫')
+            ->assertJsonPath('category_totals.0.personal_totals.0.amount', 1500)
+            ->assertJsonPath('category_totals.0.personal_totals.1.user', '妻')
+            ->assertJsonPath('category_totals.0.personal_totals.1.amount', 500)
             ->assertJsonPath('category_totals.0.shared_total', 11000)
             ->assertJsonPath('category_totals.0.total', 11000);
     }
