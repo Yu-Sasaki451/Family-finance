@@ -258,6 +258,155 @@ const MonthlyExpenseSummary = ({
             category.is_electricity,
     );
 
+    const renderPersonalExpenses = (expense) => {
+        return expense.personal_expenses.length > 0
+            ? expense.personal_expenses.map((item) => (
+                  <div key={`${expense.id}-${item.user}`}>
+                      {item.user}: {formatAmount(item.amount)}
+                      {item.note && `（${item.note}）`}
+                  </div>
+              ))
+            : "-";
+    };
+
+    const renderEditExpenseRow = (expense, colSpan) => {
+        if (editingExpense?.id !== expense.id) {
+            return null;
+        }
+
+        return (
+            <tr className="editExpenseRow">
+                <td colSpan={colSpan}>
+                    <form className="editExpenseForm" onSubmit={updateExpense}>
+                        <h3>登録内容の変更</h3>
+                        <label>
+                            支払日
+                            <input
+                                name="spent_at"
+                                type="date"
+                                value={editingExpense.spent_at}
+                                onChange={changeEditingExpense}
+                            />
+                        </label>
+                        <label>
+                            支払った人
+                            <select
+                                name="user_id"
+                                value={editingExpense.user_id}
+                                onChange={changeEditingExpense}
+                            >
+                                {users.map((user) => (
+                                    <option key={user.id} value={user.id}>
+                                        {user.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        <label>
+                            カテゴリ
+                            <select
+                                name="category_id"
+                                value={editingExpense.category_id}
+                                onChange={changeEditingExpense}
+                            >
+                                {categories.map((category) => (
+                                    <option key={category.id} value={category.id}>
+                                        {category.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                        <label>
+                            合計金額
+                            <input
+                                name="amount"
+                                type="number"
+                                min="1"
+                                value={editingExpense.amount}
+                                onChange={changeEditingExpense}
+                            />
+                        </label>
+                        {isEditingElectricity && (
+                            <label>
+                                売電収入
+                                <input
+                                    name="income"
+                                    type="number"
+                                    min="0"
+                                    value={editingExpense.income}
+                                    onChange={changeEditingExpense}
+                                />
+                            </label>
+                        )}
+                        <label>
+                            メモ
+                            <input
+                                name="note"
+                                type="text"
+                                value={editingExpense.note}
+                                onChange={changeEditingExpense}
+                            />
+                        </label>
+
+                        <fieldset>
+                            <legend>個人分</legend>
+                            {users.map((user) => {
+                                const personalExpense =
+                                    editingExpense.personal_expenses.find(
+                                        (item) => item.user_id === user.id,
+                                    );
+
+                                return (
+                                    <div
+                                        className="editPersonalExpense"
+                                        key={user.id}
+                                    >
+                                        <strong>{user.name}</strong>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            placeholder="金額"
+                                            value={personalExpense?.amount ?? ""}
+                                            onChange={(e) =>
+                                                changePersonalExpense(
+                                                    user.id,
+                                                    "amount",
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="内容（任意）"
+                                            value={personalExpense?.note ?? ""}
+                                            onChange={(e) =>
+                                                changePersonalExpense(
+                                                    user.id,
+                                                    "note",
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </fieldset>
+
+                        <div className="editExpenseButtons">
+                            <button type="submit">変更を保存</button>
+                            <button
+                                type="button"
+                                onClick={() => setEditingExpense(null)}
+                            >
+                                キャンセル
+                            </button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+        );
+    };
+
     const displayedMonths = currentMonthOnly
         ? months.filter((month) => month.month === selectedMonth)
         : months;
@@ -447,6 +596,17 @@ const MonthlyExpenseSummary = ({
                                                                 summaryAmount(categoryTotal),
                                                             )}
                                                         </strong>
+                                                        {Number(
+                                                            categoryTotal.personal_total ??
+                                                                0,
+                                                        ) > 0 && (
+                                                            <small className="categoryPersonalTotal">
+                                                                個人分{" "}
+                                                                {formatAmount(
+                                                                    categoryTotal.personal_total,
+                                                                )}
+                                                            </small>
+                                                        )}
                                                     </div>
                                                     <button
                                                         className="categoryDetailButton"
@@ -503,6 +663,9 @@ const MonthlyExpenseSummary = ({
                                                                         <th>
                                                                             メモ
                                                                         </th>
+                                                                        <th>
+                                                                            操作
+                                                                        </th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
@@ -510,64 +673,70 @@ const MonthlyExpenseSummary = ({
                                                                         (
                                                                             expense,
                                                                         ) => (
-                                                                            <tr
-                                                                                key={
-                                                                                    expense.id
-                                                                                }
-                                                                            >
-                                                                                <td data-label="日付">
-                                                                                    {
-                                                                                        expense.spent_at
-                                                                                    }
-                                                                                </td>
-                                                                                <td data-label="支払者">
-                                                                                    {
-                                                                                        expense.user
-                                                                                    }
-                                                                                </td>
-                                                                                <td data-label="売電収入">
-                                                                                    {expense.income
-                                                                                        ? formatAmount(
-                                                                                              expense.income,
-                                                                                          )
-                                                                                        : "-"}
-                                                                                </td>
-                                                                                <td data-label="個人分">
-                                                                                    {expense
-                                                                                        .personal_expenses
-                                                                                        .length >
-                                                                                    0
-                                                                                        ? expense.personal_expenses.map(
-                                                                                              (
-                                                                                                  item,
-                                                                                              ) => (
-                                                                                                  <div
-                                                                                                      key={`${expense.id}-${item.user}`}
-                                                                                                  >
-                                                                                                      {
-                                                                                                          item.user
-                                                                                                      }
-                                                                                                      :{" "}
-                                                                                                      {formatAmount(
-                                                                                                          item.amount,
-                                                                                                      )}
-                                                                                                      {item.note &&
-                                                                                                          `（${item.note}）`}
-                                                                                                  </div>
-                                                                                              ),
-                                                                                          )
-                                                                                        : "-"}
-                                                                                </td>
-                                                                                <td data-label="集計金額">
-                                                                                    {formatAmount(
-                                                                                        expense.shared_amount,
-                                                                                    )}
-                                                                                </td>
-                                                                                <td data-label="メモ">
-                                                                                    {expense.note ||
-                                                                                        "-"}
-                                                                                </td>
-                                                                            </tr>
+                                                                            <Fragment key={expense.id}>
+                                                                                <tr>
+                                                                                    <td data-label="日付">
+                                                                                        {
+                                                                                            expense.spent_at
+                                                                                        }
+                                                                                    </td>
+                                                                                    <td data-label="支払者">
+                                                                                        {
+                                                                                            expense.user
+                                                                                        }
+                                                                                    </td>
+                                                                                    <td data-label="売電収入">
+                                                                                        {expense.income
+                                                                                            ? formatAmount(
+                                                                                                  expense.income,
+                                                                                              )
+                                                                                            : "-"}
+                                                                                    </td>
+                                                                                    <td data-label="個人分">
+                                                                                        {renderPersonalExpenses(
+                                                                                            expense,
+                                                                                        )}
+                                                                                    </td>
+                                                                                    <td data-label="集計金額">
+                                                                                        {formatAmount(
+                                                                                            expense.shared_amount,
+                                                                                        )}
+                                                                                    </td>
+                                                                                    <td data-label="メモ">
+                                                                                        {expense.note ||
+                                                                                            "-"}
+                                                                                    </td>
+                                                                                    <td data-label="操作">
+                                                                                        <div className="expenseActions">
+                                                                                            <button
+                                                                                                type="button"
+                                                                                                onClick={() =>
+                                                                                                    startEditing(
+                                                                                                        expense,
+                                                                                                    )
+                                                                                                }
+                                                                                            >
+                                                                                                変更
+                                                                                            </button>
+                                                                                            <button
+                                                                                                className="deleteExpenseButton"
+                                                                                                type="button"
+                                                                                                onClick={() =>
+                                                                                                    deleteExpense(
+                                                                                                        expense,
+                                                                                                    )
+                                                                                                }
+                                                                                            >
+                                                                                                削除
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                </tr>
+                                                                                {renderEditExpenseRow(
+                                                                                    expense,
+                                                                                    7,
+                                                                                )}
+                                                                            </Fragment>
                                                                         ),
                                                                     )}
                                                                 </tbody>
@@ -689,26 +858,9 @@ const MonthlyExpenseSummary = ({
                                                         : "-"}
                                                 </td>
                                                 <td data-label="個人分">
-                                                    {expense.personal_expenses
-                                                        .length > 0
-                                                        ? expense.personal_expenses.map(
-                                                              (item) => (
-                                                                  <div
-                                                                      key={`${expense.id}-${item.user}`}
-                                                                  >
-                                                                      {
-                                                                          item.user
-                                                                      }
-                                                                      :{" "}
-                                                                      {formatAmount(
-                                                                          item.amount,
-                                                                      )}
-                                                                      {item.note &&
-                                                                          `（${item.note}）`}
-                                                                  </div>
-                                                              ),
-                                                          )
-                                                        : "-"}
+                                                    {renderPersonalExpenses(
+                                                        expense,
+                                                    )}
                                                 </td>
                                                 <td data-label="集計金額">
                                                     {formatAmount(
@@ -745,230 +897,9 @@ const MonthlyExpenseSummary = ({
                                                 </td>
                                             </tr>
 
-                                                {editingExpense?.id ===
-                                                    expense.id && (
-                                                    <tr className="editExpenseRow">
-                                                        <td colSpan="8">
-                                                            <form
-                                                                className="editExpenseForm"
-                                                                onSubmit={
-                                                                    updateExpense
-                                                                }
-                                                            >
-                                                                <h3>
-                                                                    登録内容の変更
-                                                                </h3>
-                                                                <label>
-                                                                    支払日
-                                                                    <input
-                                                                        name="spent_at"
-                                                                        type="date"
-                                                                        value={
-                                                                            editingExpense.spent_at
-                                                                        }
-                                                                        onChange={
-                                                                            changeEditingExpense
-                                                                        }
-                                                                    />
-                                                                </label>
-                                                                <label>
-                                                                    支払った人
-                                                                    <select
-                                                                        name="user_id"
-                                                                        value={
-                                                                            editingExpense.user_id
-                                                                        }
-                                                                        onChange={
-                                                                            changeEditingExpense
-                                                                        }
-                                                                    >
-                                                                        {users.map(
-                                                                            (
-                                                                                user,
-                                                                            ) => (
-                                                                                <option
-                                                                                    key={
-                                                                                        user.id
-                                                                                    }
-                                                                                    value={
-                                                                                        user.id
-                                                                                    }
-                                                                                >
-                                                                                    {
-                                                                                        user.name
-                                                                                    }
-                                                                                </option>
-                                                                            ),
-                                                                        )}
-                                                                    </select>
-                                                                </label>
-                                                                <label>
-                                                                    カテゴリ
-                                                                    <select
-                                                                        name="category_id"
-                                                                        value={
-                                                                            editingExpense.category_id
-                                                                        }
-                                                                        onChange={
-                                                                            changeEditingExpense
-                                                                        }
-                                                                    >
-                                                                        {categories.map(
-                                                                            (
-                                                                                category,
-                                                                            ) => (
-                                                                                <option
-                                                                                    key={
-                                                                                        category.id
-                                                                                    }
-                                                                                    value={
-                                                                                        category.id
-                                                                                    }
-                                                                                >
-                                                                                    {
-                                                                                        category.name
-                                                                                    }
-                                                                                </option>
-                                                                            ),
-                                                                        )}
-                                                                    </select>
-                                                                </label>
-                                                                <label>
-                                                                    合計金額
-                                                                    <input
-                                                                        name="amount"
-                                                                        type="number"
-                                                                        min="1"
-                                                                        value={
-                                                                            editingExpense.amount
-                                                                        }
-                                                                        onChange={
-                                                                            changeEditingExpense
-                                                                        }
-                                                                    />
-                                                                </label>
-                                                                {isEditingElectricity && (
-                                                                    <label>
-                                                                        売電収入
-                                                                        <input
-                                                                            name="income"
-                                                                            type="number"
-                                                                            min="0"
-                                                                            value={
-                                                                                editingExpense.income
-                                                                            }
-                                                                            onChange={
-                                                                                changeEditingExpense
-                                                                            }
-                                                                        />
-                                                                    </label>
-                                                                )}
-                                                                <label>
-                                                                    メモ
-                                                                    <input
-                                                                        name="note"
-                                                                        type="text"
-                                                                        value={
-                                                                            editingExpense.note
-                                                                        }
-                                                                        onChange={
-                                                                            changeEditingExpense
-                                                                        }
-                                                                    />
-                                                                </label>
-
-                                                                <fieldset>
-                                                                    <legend>
-                                                                        個人分
-                                                                    </legend>
-                                                                    {users.map(
-                                                                        (
-                                                                            user,
-                                                                        ) => {
-                                                                            const personalExpense =
-                                                                                editingExpense.personal_expenses.find(
-                                                                                    (
-                                                                                        item,
-                                                                                    ) =>
-                                                                                        item.user_id ===
-                                                                                        user.id,
-                                                                                );
-
-                                                                            return (
-                                                                                <div
-                                                                                    className="editPersonalExpense"
-                                                                                    key={
-                                                                                        user.id
-                                                                                    }
-                                                                                >
-                                                                                    <strong>
-                                                                                        {
-                                                                                            user.name
-                                                                                        }
-                                                                                    </strong>
-                                                                                    <input
-                                                                                        type="number"
-                                                                                        min="0"
-                                                                                        placeholder="金額"
-                                                                                        value={
-                                                                                            personalExpense?.amount ??
-                                                                                            ""
-                                                                                        }
-                                                                                        onChange={(
-                                                                                            e,
-                                                                                        ) =>
-                                                                                            changePersonalExpense(
-                                                                                                user.id,
-                                                                                                "amount",
-                                                                                                e
-                                                                                                    .target
-                                                                                                    .value,
-                                                                                            )
-                                                                                        }
-                                                                                    />
-                                                                                    <input
-                                                                                        type="text"
-                                                                                        placeholder="内容（任意）"
-                                                                                        value={
-                                                                                            personalExpense?.note ??
-                                                                                            ""
-                                                                                        }
-                                                                                        onChange={(
-                                                                                            e,
-                                                                                        ) =>
-                                                                                            changePersonalExpense(
-                                                                                                user.id,
-                                                                                                "note",
-                                                                                                e
-                                                                                                    .target
-                                                                                                    .value,
-                                                                                            )
-                                                                                        }
-                                                                                    />
-                                                                                </div>
-                                                                            );
-                                                                        },
-                                                                    )}
-                                                                </fieldset>
-
-                                                                <div className="editExpenseButtons">
-                                                                    <button type="submit">
-                                                                        変更を保存
-                                                                    </button>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            setEditingExpense(
-                                                                                null,
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        キャンセル
-                                                                    </button>
-                                                                </div>
-                                                            </form>
-                                                        </td>
-                                                    </tr>
+                                                {renderEditExpenseRow(
+                                                    expense,
+                                                    8,
                                                 )}
                                         </Fragment>
                                     ))}

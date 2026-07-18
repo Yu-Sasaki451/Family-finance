@@ -54,6 +54,7 @@ class MonthlyExpenseService
                 return [
                     'category_id' => $category->id,
                     'category' => $category->name,
+                    'personal_total' => $items->sum(fn ($expense) => $this->personalTotal($expense)),
                     'shared_total' => $items->sum(fn ($expense) => $this->sharedAmount($expense)),
                     'total' => $items->sum(fn ($expense) => $this->sharedAmount($expense)),
                 ];

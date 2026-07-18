@@ -275,6 +275,12 @@
     overflow-wrap: anywhere;
 }
 
+.categoryPersonalTotal {
+    color: #777;
+    font-size: 14px;
+    font-weight: bold;
+}
+
 .categoryDetailButton {
     flex-shrink: 0;
     padding: 8px 12px;
