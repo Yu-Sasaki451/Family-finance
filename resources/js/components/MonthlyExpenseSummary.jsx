@@ -130,6 +130,10 @@ const MonthlyExpenseSummary = ({
         return `${Number(amount).toLocaleString()}円`;
     };
 
+    const summaryAmount = (item) => {
+        return Number(item?.shared_total ?? item?.total ?? 0);
+    };
+
     const getSettlementText = () => {
         if (!settlement || settlement.error) {
             return null;
@@ -277,7 +281,7 @@ const MonthlyExpenseSummary = ({
         );
     });
     const maxMonthlyTotal = Math.max(
-        ...chartMonths.map((month) => Math.max(month.total, 0)),
+        ...chartMonths.map((month) => Math.max(summaryAmount(month), 0)),
         1,
     );
     const selectedCategoryTotal = categoryTotals.find(
@@ -312,7 +316,7 @@ const MonthlyExpenseSummary = ({
                 <section className="currentMonthPanel">
                     <div className="currentMonthHeader">
                         <span>{formatMonth(selectedMonthSummary.month)}</span>
-                        <strong>{formatAmount(selectedMonthSummary.total)}</strong>
+                        <strong>{formatAmount(summaryAmount(selectedMonthSummary))}</strong>
                     </div>
                 </section>
             )}
@@ -326,10 +330,10 @@ const MonthlyExpenseSummary = ({
                     <div className="monthlyTrendChart">
                         {chartMonths.map((month) => {
                             const barHeight =
-                                month.total > 0
+                                summaryAmount(month) > 0
                                     ? Math.max(
                                           8,
-                                          (month.total / maxMonthlyTotal) *
+                                          (summaryAmount(month) / maxMonthlyTotal) *
                                               100,
                                       )
                                     : 0;
@@ -342,11 +346,11 @@ const MonthlyExpenseSummary = ({
                                     className="monthlyTrendItem"
                                     key={month.month}
                                 >
-                                    <strong>{formatAmount(month.total)}</strong>
+                                    <strong>{formatAmount(summaryAmount(month))}</strong>
                                     <div className="monthlyTrendBarFrame">
                                         <div
                                             className={`monthlyTrendBar ${
-                                                month.total === 0
+                                                summaryAmount(month) === 0
                                                     ? "zeroTrendBar"
                                                     : ""
                                             }`}
@@ -399,12 +403,8 @@ const MonthlyExpenseSummary = ({
                             onClick={() => selectMonth(month.month)}
                         >
                             <span>{formatMonth(month.month)}</span>
-                            <strong>{formatAmount(month.total)}</strong>
-                            <small>
-                                支出 {formatAmount(month.expense_total)} / 売電{" "}
-                                {formatAmount(month.income_total)} / 個人分{" "}
-                                {formatAmount(month.personal_total ?? 0)}
-                            </small>
+                            <strong>{formatAmount(summaryAmount(month))}</strong>
+                            <small>売電・個人分を除外済み</small>
                             <small>{month.count}件</small>
                         </button>
                     ))}
@@ -423,8 +423,7 @@ const MonthlyExpenseSummary = ({
                                         <span>合計</span>
                                         <strong>
                                             {formatAmount(
-                                                selectedMonthSummary?.total ??
-                                                    0,
+                                                summaryAmount(selectedMonthSummary),
                                             )}
                                         </strong>
                                     </div>
@@ -445,7 +444,7 @@ const MonthlyExpenseSummary = ({
                                                         </span>
                                                         <strong>
                                                             {formatAmount(
-                                                                categoryTotal.total,
+                                                                summaryAmount(categoryTotal),
                                                             )}
                                                         </strong>
                                                     </div>
@@ -493,19 +492,13 @@ const MonthlyExpenseSummary = ({
                                                                             支払者
                                                                         </th>
                                                                         <th>
-                                                                            合計金額
-                                                                        </th>
-                                                                        <th>
                                                                             売電収入
-                                                                        </th>
-                                                                        <th>
-                                                                            差引金額
                                                                         </th>
                                                                         <th>
                                                                             個人分
                                                                         </th>
                                                                         <th>
-                                                                            共有分
+                                                                            集計金額
                                                                         </th>
                                                                         <th>
                                                                             メモ
@@ -532,22 +525,12 @@ const MonthlyExpenseSummary = ({
                                                                                         expense.user
                                                                                     }
                                                                                 </td>
-                                                                                <td data-label="合計金額">
-                                                                                    {formatAmount(
-                                                                                        expense.amount,
-                                                                                    )}
-                                                                                </td>
                                                                                 <td data-label="売電収入">
                                                                                     {expense.income
                                                                                         ? formatAmount(
                                                                                               expense.income,
                                                                                           )
                                                                                         : "-"}
-                                                                                </td>
-                                                                                <td data-label="差引金額">
-                                                                                    {formatAmount(
-                                                                                        expense.net_amount,
-                                                                                    )}
                                                                                 </td>
                                                                                 <td data-label="個人分">
                                                                                     {expense
@@ -575,7 +558,7 @@ const MonthlyExpenseSummary = ({
                                                                                           )
                                                                                         : "-"}
                                                                                 </td>
-                                                                                <td data-label="共有分">
+                                                                                <td data-label="集計金額">
                                                                                     {formatAmount(
                                                                                         expense.shared_amount,
                                                                                     )}
@@ -678,11 +661,9 @@ const MonthlyExpenseSummary = ({
                                         <th>日付</th>
                                         <th>カテゴリ</th>
                                         <th>支払者</th>
-                                        <th>合計金額</th>
                                         <th>売電収入</th>
-                                        <th>差引金額</th>
                                         <th>個人分</th>
-                                        <th>共有分</th>
+                                        <th>集計金額</th>
                                         <th>メモ</th>
                                         <th>操作</th>
                                     </tr>
@@ -700,22 +681,12 @@ const MonthlyExpenseSummary = ({
                                                 <td data-label="支払者">
                                                     {expense.user}
                                                 </td>
-                                                <td data-label="合計金額">
-                                                    {formatAmount(
-                                                        expense.amount,
-                                                    )}
-                                                </td>
                                                 <td data-label="売電収入">
                                                     {expense.income
                                                         ? formatAmount(
                                                               expense.income,
                                                           )
                                                         : "-"}
-                                                </td>
-                                                <td data-label="差引金額">
-                                                    {formatAmount(
-                                                        expense.net_amount,
-                                                    )}
                                                 </td>
                                                 <td data-label="個人分">
                                                     {expense.personal_expenses
@@ -739,7 +710,7 @@ const MonthlyExpenseSummary = ({
                                                           )
                                                         : "-"}
                                                 </td>
-                                                <td data-label="共有分">
+                                                <td data-label="集計金額">
                                                     {formatAmount(
                                                         expense.shared_amount,
                                                     )}
@@ -777,7 +748,7 @@ const MonthlyExpenseSummary = ({
                                                 {editingExpense?.id ===
                                                     expense.id && (
                                                     <tr className="editExpenseRow">
-                                                        <td colSpan="10">
+                                                        <td colSpan="8">
                                                             <form
                                                                 className="editExpenseForm"
                                                                 onSubmit={
