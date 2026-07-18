@@ -23,7 +23,8 @@ class MonthlyExpenseService
                 'month' => $month,
                 'expense_total' => $items->sum('amount'),
                 'income_total' => $items->sum('income'),
-                'total' => $items->sum(fn ($expense) => $expense->amount - ($expense->income ?? 0)),
+                'personal_total' => $items->sum(fn ($expense) => $this->personalTotal($expense)),
+                'total' => $items->sum(fn ($expense) => $this->sharedAmount($expense)),
                 'count' => $items->count(),
             ])
             ->values();
@@ -52,7 +53,7 @@ class MonthlyExpenseService
                 return [
                     'category_id' => $category->id,
                     'category' => $category->name,
-                    'total' => $items->sum(fn ($expense) => $expense->amount - ($expense->income ?? 0)),
+                    'total' => $items->sum(fn ($expense) => $this->sharedAmount($expense)),
                 ];
             })
             ->sortByDesc('total')
@@ -63,8 +64,7 @@ class MonthlyExpenseService
     {
         return $expenses
             ->map(function (Expense $expense) {
-                $personalTotal = $expense->personal_expenses->sum('amount');
-                $netAmount = $expense->amount - ($expense->income ?? 0);
+                $netAmount = $this->netAmount($expense);
 
                 return [
                     'id' => $expense->id,
@@ -76,7 +76,7 @@ class MonthlyExpenseService
                     'amount' => $expense->amount,
                     'income' => $expense->income,
                     'net_amount' => $netAmount,
-                    'shared_amount' => $netAmount - $personalTotal,
+                    'shared_amount' => $this->sharedAmount($expense),
                     'note' => $expense->note,
                     'personal_expenses' => $expense->personal_expenses->map(fn ($item) => [
                         'user_id' => $item->user_id,
@@ -131,13 +131,13 @@ class MonthlyExpenseService
                 ];
             }
 
-            $netAmount = $expense->amount - ($expense->income ?? 0);
+            $netAmount = $this->netAmount($expense);
             $paid[$expense->user_id] += $netAmount;
 
             $personalAmounts = $expense->personal_expenses
                 ->groupBy('user_id')
                 ->map->sum('amount');
-            $sharedAmount = $netAmount - $expense->personal_expenses->sum('amount');
+            $sharedAmount = $this->sharedAmount($expense);
             $remainingSharedAmount = $sharedAmount;
 
             foreach ($users as $index => $user) {
@@ -172,5 +172,20 @@ class MonthlyExpenseService
                 ]
                 : null,
         ];
+    }
+
+    private function netAmount(Expense $expense): int
+    {
+        return $expense->amount - ($expense->income ?? 0);
+    }
+
+    private function personalTotal(Expense $expense): int
+    {
+        return $expense->personal_expenses->sum('amount');
+    }
+
+    private function sharedAmount(Expense $expense): int
+    {
+        return $this->netAmount($expense) - $this->personalTotal($expense);
     }
 }

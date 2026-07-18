@@ -86,6 +86,41 @@ class MonthlyExpenseApiTest extends TestCase
             ->assertJsonCount(2, 'category_totals');
     }
 
+    public function test_monthly_and_category_totals_exclude_personal_expenses(): void
+    {
+        [$family, $husband, $wife] = $this->createFamilyUsers();
+        $food = Category::create(['name' => '食費']);
+
+        $expense = Expense::create([
+            'family_id' => $family->id,
+            'user_id' => $husband->id,
+            'category_id' => $food->id,
+            'amount' => 10000,
+            'spent_at' => '2026-06-09',
+            'note' => null,
+        ]);
+        $expense->personal_expenses()->createMany([
+            ['user_id' => $husband->id, 'amount' => 1500, 'note' => null],
+            ['user_id' => $wife->id, 'amount' => 500, 'note' => null],
+        ]);
+
+        Expense::create([
+            'family_id' => $family->id,
+            'user_id' => $husband->id,
+            'category_id' => $food->id,
+            'amount' => 3000,
+            'spent_at' => '2026-06-10',
+            'note' => null,
+        ]);
+
+        $this->getJson('/api/expenses/monthly?month=2026-06')
+            ->assertOk()
+            ->assertJsonPath('months.0.expense_total', 13000)
+            ->assertJsonPath('months.0.personal_total', 2000)
+            ->assertJsonPath('months.0.total', 11000)
+            ->assertJsonPath('category_totals.0.total', 11000);
+    }
+
     public function test_selected_month_details_are_displayed(): void
     {
         [$family, $user, $wife] = $this->createFamilyUsers();

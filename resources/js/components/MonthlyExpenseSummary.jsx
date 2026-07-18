@@ -402,7 +402,8 @@ const MonthlyExpenseSummary = ({
                             <strong>{formatAmount(month.total)}</strong>
                             <small>
                                 支出 {formatAmount(month.expense_total)} / 売電{" "}
-                                {formatAmount(month.income_total)}
+                                {formatAmount(month.income_total)} / 個人分{" "}
+                                {formatAmount(month.personal_total ?? 0)}
                             </small>
                             <small>{month.count}件</small>
                         </button>
