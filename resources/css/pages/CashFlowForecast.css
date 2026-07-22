@@ -151,6 +151,8 @@
 .forecastTable {
     display: grid;
     gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
 }
 
 .forecastTableHeader,
@@ -173,7 +175,8 @@
 }
 
 .variableForecastRow.forecastMonths6 {
-    grid-template-columns: minmax(160px, 1.4fr) repeat(6, minmax(110px, 1fr)) 70px;
+    grid-template-columns: minmax(180px, 1.4fr) repeat(6, minmax(130px, 1fr)) 70px;
+    min-width: 1240px;
 }
 
 .forecastTableHeader {
@@ -261,7 +264,6 @@
 @media (max-width: 900px) {
     .forecastTable {
         overflow-x: auto;
-        padding-bottom: 4px;
     }
 
     .forecastTableHeader,
@@ -274,7 +276,7 @@
     }
 
     .variableForecastRow.forecastMonths6 {
-        min-width: 1080px;
+        min-width: 1240px;
     }
 
     .balanceGrid,
@@ -296,6 +298,7 @@
 
     .forecastTable {
         overflow-x: visible;
+        padding-bottom: 0;
     }
 
     .forecastTableHeader {
@@ -305,7 +308,8 @@
     .forecastTableRow,
     .fixedForecastRow,
     .simulationTableRow,
-    .variableForecastRow {
+    .variableForecastRow,
+    .variableForecastRow.forecastMonths6 {
         grid-template-columns: 1fr;
         min-width: 0;
     }
