@@ -13,6 +13,7 @@ class CashFlowForecast extends Model
         'family_id',
         'scope',
         'owner_id',
+        'forecast_months',
         'start_month',
         'current_balance',
         'fixed_incomes',

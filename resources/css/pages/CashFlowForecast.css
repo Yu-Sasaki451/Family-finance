@@ -67,7 +67,7 @@
 
 .forecastModeSection {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
     margin-bottom: 26px;
 }
@@ -172,6 +172,10 @@
     grid-template-columns: minmax(160px, 1.4fr) repeat(3, minmax(120px, 1fr)) 70px;
 }
 
+.variableForecastRow.forecastMonths6 {
+    grid-template-columns: minmax(160px, 1.4fr) repeat(6, minmax(110px, 1fr)) 70px;
+}
+
 .forecastTableHeader {
     color: #555;
     font-size: 14px;
@@ -267,6 +271,10 @@
 
     .variableForecastRow {
         min-width: 720px;
+    }
+
+    .variableForecastRow.forecastMonths6 {
+        min-width: 1080px;
     }
 
     .balanceGrid,

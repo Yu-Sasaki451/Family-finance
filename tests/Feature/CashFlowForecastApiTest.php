@@ -89,6 +89,77 @@ class CashFlowForecastApiTest extends TestCase
             ->assertJsonPath('variable_expenses.0.amounts.1.amount', 40000);
     }
 
+    public function test_six_month_forecast_can_be_saved_separately_from_three_month_forecast(): void
+    {
+        [$family, $user] = $this->createFamilyUsers(['夫']);
+
+        $this->putJson('/api/cash-flow-forecast', [
+            'scope' => 'personal',
+            'forecast_months' => 3,
+            'start_month' => '2026-07',
+            'current_balance' => 100000,
+            'fixed_incomes' => [],
+            'variable_incomes' => [],
+            'fixed_expenses' => [],
+            'variable_expenses' => [],
+        ])->assertOk()
+            ->assertJsonPath('forecast_months', 3)
+            ->assertJsonPath('current_balance', 100000);
+
+        $this->putJson('/api/cash-flow-forecast', [
+            'scope' => 'personal',
+            'forecast_months' => 6,
+            'start_month' => '2026-07',
+            'current_balance' => 200000,
+            'fixed_incomes' => [],
+            'variable_incomes' => [],
+            'fixed_expenses' => [],
+            'variable_expenses' => [
+                [
+                    'title' => '食費',
+                    'same_amount' => false,
+                    'amounts' => [
+                        ['month' => '2026-07', 'amount' => 30000],
+                        ['month' => '2026-08', 'amount' => 31000],
+                        ['month' => '2026-09', 'amount' => 32000],
+                        ['month' => '2026-10', 'amount' => 33000],
+                        ['month' => '2026-11', 'amount' => 34000],
+                        ['month' => '2026-12', 'amount' => 35000],
+                    ],
+                ],
+            ],
+        ])->assertOk()
+            ->assertJsonPath('forecast_months', 6)
+            ->assertJsonPath('current_balance', 200000)
+            ->assertJsonPath('variable_expenses.0.amounts.5.amount', 35000);
+
+        $this->getJson('/api/cash-flow-forecast?scope=personal&forecast_months=3')
+            ->assertOk()
+            ->assertJsonPath('forecast_months', 3)
+            ->assertJsonPath('current_balance', 100000);
+
+        $this->getJson('/api/cash-flow-forecast?scope=personal&forecast_months=6')
+            ->assertOk()
+            ->assertJsonPath('forecast_months', 6)
+            ->assertJsonPath('current_balance', 200000)
+            ->assertJsonPath('variable_expenses.0.amounts.5.month', '2026-12');
+
+        $this->assertDatabaseHas('cash_flow_forecasts', [
+            'family_id' => $family->id,
+            'scope' => 'personal',
+            'owner_id' => $user->id,
+            'forecast_months' => 3,
+            'current_balance' => 100000,
+        ]);
+        $this->assertDatabaseHas('cash_flow_forecasts', [
+            'family_id' => $family->id,
+            'scope' => 'personal',
+            'owner_id' => $user->id,
+            'forecast_months' => 6,
+            'current_balance' => 200000,
+        ]);
+    }
+
     public function test_cash_flow_forecast_is_saved_per_user(): void
     {
         [$family, $husband, $wife] = $this->createFamilyUsers();

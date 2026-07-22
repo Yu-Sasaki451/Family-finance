@@ -14,35 +14,38 @@ class CashFlowForecastController extends Controller
     {
         $family = $request->user()->currentFamily();
         $scope = $this->scope($request->query('scope'));
+        $forecastMonths = $this->forecastMonths($request->query('forecast_months'));
+        $ownerId = $this->ownerId($scope, $request->user()->id);
         $forecast = CashFlowForecast::where('family_id', $family->id)
             ->where('scope', $scope)
-            ->where('owner_id', $this->ownerId($scope, $request->user()->id))
+            ->where('owner_id', $ownerId)
+            ->where('forecast_months', $forecastMonths)
             ->first();
+        $simulationData = $this->simulationData($family->id, $scope, $ownerId);
 
         if ($forecast) {
-            return $forecast->toArray();
+            return array_merge($forecast->toArray(), $simulationData);
         }
 
         $months = $this->months(now()->format('Y-m'));
 
-        return [
+        return array_merge([
             'scope' => $scope,
+            'forecast_months' => $forecastMonths,
             'start_month' => $months[0],
             'current_balance' => 0,
             'fixed_incomes' => [],
             'variable_incomes' => [],
             'fixed_expenses' => [],
             'variable_expenses' => [],
-            'simulation_incomes' => [],
-            'simulation_fixed_expenses' => [],
-            'simulation_variable_expenses' => [],
-        ];
+        ], $simulationData);
     }
 
     public function update(CashFlowForecastRequest $request): JsonResponse
     {
         $data = $request->validated();
         $family = $request->user()->currentFamily();
+        $forecastMonths = $request->forecastMonths();
         $ownerId = $this->ownerId($data['scope'], $request->user()->id);
 
         $forecast = CashFlowForecast::updateOrCreate(
@@ -50,8 +53,10 @@ class CashFlowForecastController extends Controller
                 'family_id' => $family->id,
                 'scope' => $data['scope'],
                 'owner_id' => $ownerId,
+                'forecast_months' => $forecastMonths,
             ],
             [
+                'forecast_months' => $forecastMonths,
                 'start_month' => $data['start_month'],
                 'current_balance' => $data['current_balance'],
                 'fixed_incomes' => $data['fixed_incomes'],
@@ -70,14 +75,18 @@ class CashFlowForecastController extends Controller
         $family = $request->user()->currentFamily();
         $ownerId = $this->ownerId($data['scope'], $request->user()->id);
 
-        $forecast = CashFlowForecast::firstOrNew([
-            'family_id' => $family->id,
-            'scope' => $data['scope'],
-            'owner_id' => $ownerId,
-        ]);
+        $forecast = CashFlowForecast::where('family_id', $family->id)
+            ->where('scope', $data['scope'])
+            ->where('owner_id', $ownerId)
+            ->orderBy('forecast_months')
+            ->first();
 
-        if (! $forecast->exists) {
-            $forecast->fill($this->defaultForecastData($data['scope']));
+        if (! $forecast) {
+            $forecast = new CashFlowForecast([
+                'family_id' => $family->id,
+                'owner_id' => $ownerId,
+                ...$this->defaultForecastData($data['scope']),
+            ]);
         }
 
         $forecast->fill([
@@ -102,6 +111,13 @@ class CashFlowForecastController extends Controller
         return $scope === 'group' ? 0 : $userId;
     }
 
+    private function forecastMonths(mixed $forecastMonths): int
+    {
+        $forecastMonths = (int) ($forecastMonths ?? 3);
+
+        return in_array($forecastMonths, [3, 6], true) ? $forecastMonths : 3;
+    }
+
     private function months(string $startMonth): array
     {
         [$year, $month] = array_map('intval', explode('-', $startMonth));
@@ -118,12 +134,33 @@ class CashFlowForecastController extends Controller
     {
         return [
             'scope' => $scope,
+            'forecast_months' => 3,
             'start_month' => now()->format('Y-m'),
             'current_balance' => 0,
             'fixed_incomes' => [],
             'variable_incomes' => [],
             'fixed_expenses' => [],
             'variable_expenses' => [],
+        ];
+    }
+
+    private function simulationData(int $familyId, string $scope, int $ownerId): array
+    {
+        $forecast = CashFlowForecast::where('family_id', $familyId)
+            ->where('scope', $scope)
+            ->where('owner_id', $ownerId)
+            ->where(function ($query) {
+                $query->whereNotNull('simulation_incomes')
+                    ->orWhereNotNull('simulation_fixed_expenses')
+                    ->orWhereNotNull('simulation_variable_expenses');
+            })
+            ->orderBy('forecast_months')
+            ->first();
+
+        return [
+            'simulation_incomes' => $forecast?->simulation_incomes ?? [],
+            'simulation_fixed_expenses' => $forecast?->simulation_fixed_expenses ?? [],
+            'simulation_variable_expenses' => $forecast?->simulation_variable_expenses ?? [],
         ];
     }
 }

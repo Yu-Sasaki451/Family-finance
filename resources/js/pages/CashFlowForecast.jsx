@@ -3,6 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import "../../css/pages/CashFlowForecast.css";
 import Header from "../components/Header";
 
+const DEFAULT_FORECAST_MONTHS = 3;
+const FORECAST_MONTH_OPTIONS = [3, 6];
+
 const getCurrentMonth = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -11,10 +14,10 @@ const getCurrentMonth = () => {
     return `${year}-${month}`;
 };
 
-const buildMonths = (startMonth) => {
+const buildMonths = (startMonth, forecastMonths = DEFAULT_FORECAST_MONTHS) => {
     const [year, month] = startMonth.split("-").map(Number);
 
-    return Array.from({ length: 3 }, (_, index) => {
+    return Array.from({ length: forecastMonths }, (_, index) => {
         const date = new Date(year, month - 1 + index, 1);
         const forecastYear = date.getFullYear();
         const forecastMonth = String(date.getMonth() + 1).padStart(2, "0");
@@ -110,9 +113,9 @@ const alignSimulationItems = (items = []) => {
     }));
 };
 
-const emptyForm = (scope) => {
+const emptyForm = (scope, forecastMonths = DEFAULT_FORECAST_MONTHS) => {
     const startMonth = getCurrentMonth();
-    const months = buildMonths(startMonth);
+    const months = buildMonths(startMonth, forecastMonths);
 
     return {
         scope,
@@ -167,6 +170,9 @@ const cleanSimulationItems = (items) => {
 const CashFlowForecast = () => {
     const [mode, setMode] = useState("simulation");
     const [simulationScope, setSimulationScope] = useState("personal");
+    const [forecastMonths, setForecastMonths] = useState(
+        DEFAULT_FORECAST_MONTHS,
+    );
     const [form, setForm] = useState(emptyForm("personal"));
     const [simulations, setSimulations] = useState(emptySimulations());
     const [message, setMessage] = useState("");
@@ -175,39 +181,49 @@ const CashFlowForecast = () => {
     const simulation = simulations[simulationScope];
 
     const months = useMemo(
-        () => buildMonths(form.start_month),
-        [form.start_month],
+        () => buildMonths(form.start_month, forecastMonths),
+        [form.start_month, forecastMonths],
     );
 
-    const getForecast = async (scope = form.scope) => {
+    const getForecast = async (
+        scope = form.scope,
+        monthCount = forecastMonths,
+    ) => {
         try {
             const response = await axios.get("/api/cash-flow-forecast", {
-                params: { scope },
+                params: { scope, forecast_months: monthCount },
             });
             const startMonth = response.data.start_month ?? getCurrentMonth();
-            const forecastMonths = buildMonths(startMonth);
+            const responseForecastMonths = Number(
+                response.data.forecast_months ?? monthCount,
+            );
+            const responseMonths = buildMonths(
+                startMonth,
+                responseForecastMonths,
+            );
 
+            setForecastMonths(responseForecastMonths);
             setForm({
                 scope,
                 start_month: startMonth,
                 current_balance: response.data.current_balance ?? "",
                 fixed_incomes: alignItems(
                     response.data.fixed_incomes ?? [],
-                    forecastMonths,
+                    responseMonths,
                     true,
                 ),
                 variable_incomes: alignItems(
                     response.data.variable_incomes ?? [],
-                    forecastMonths,
+                    responseMonths,
                 ),
                 fixed_expenses: alignItems(
                     response.data.fixed_expenses ?? [],
-                    forecastMonths,
+                    responseMonths,
                     true,
                 ),
                 variable_expenses: alignItems(
                     response.data.variable_expenses ?? [],
-                    forecastMonths,
+                    responseMonths,
                 ),
             });
             setSimulations((current) => ({
@@ -226,7 +242,7 @@ const CashFlowForecast = () => {
             }));
         } catch {
             setForm((current) => ({
-                ...emptyForm(scope),
+                ...emptyForm(scope, monthCount),
                 current_balance:
                     current.scope === scope ? current.current_balance : "",
             }));
@@ -274,12 +290,21 @@ const CashFlowForecast = () => {
     const changeScope = (scope) => {
         setMessage("");
         setError("");
-        setForm(emptyForm(scope));
-        getForecast(scope);
+        setForm(emptyForm(scope, forecastMonths));
+        getForecast(scope, forecastMonths);
+    };
+
+    const changeForecastMonths = (monthCount) => {
+        setMessage("");
+        setError("");
+        setMode("forecast");
+        setForecastMonths(monthCount);
+        setForm(emptyForm(form.scope, monthCount));
+        getForecast(form.scope, monthCount);
     };
 
     const changeStartMonth = (value) => {
-        const nextMonths = buildMonths(value);
+        const nextMonths = buildMonths(value, forecastMonths);
 
         setForm({
             ...form,
@@ -479,6 +504,7 @@ const CashFlowForecast = () => {
         try {
             await axios.put("/api/cash-flow-forecast", {
                 scope: form.scope,
+                forecast_months: forecastMonths,
                 start_month: form.start_month,
                 current_balance: cleanAmount(form.current_balance),
                 fixed_incomes: cleanItems(form.fixed_incomes, true),
@@ -608,6 +634,9 @@ const CashFlowForecast = () => {
         const title = labels[type];
         const isFixedAmount =
             type === "fixed_incomes" || type === "fixed_expenses";
+        const rowClass = isFixedAmount
+            ? "fixedForecastRow"
+            : `variableForecastRow forecastMonths${forecastMonths}`;
 
         return (
             <section className="forecastSection">
@@ -619,13 +648,7 @@ const CashFlowForecast = () => {
                 </div>
 
                 <div className="forecastTable">
-                    <div
-                        className={`forecastTableHeader ${
-                            isFixedAmount
-                                ? "fixedForecastRow"
-                                : "variableForecastRow"
-                        }`}
-                    >
+                    <div className={`forecastTableHeader ${rowClass}`}>
                         <span>見出し名</span>
                         {isFixedAmount ? (
                             <span>毎月の金額</span>
@@ -639,11 +662,7 @@ const CashFlowForecast = () => {
 
                     {form[type].map((item, itemIndex) => (
                         <div
-                            className={`forecastTableRow ${
-                                isFixedAmount
-                                    ? "fixedForecastRow"
-                                    : "variableForecastRow"
-                            }`}
+                            className={`forecastTableRow ${rowClass}`}
                             key={itemIndex}
                         >
                             <input
@@ -721,13 +740,21 @@ const CashFlowForecast = () => {
                     >
                         1ヶ月シミュレーション
                     </button>
-                    <button
-                        className={mode === "forecast" ? "selectedMode" : ""}
-                        type="button"
-                        onClick={() => setMode("forecast")}
-                    >
-                        3ヶ月予測
-                    </button>
+                    {FORECAST_MONTH_OPTIONS.map((monthCount) => (
+                        <button
+                            className={
+                                mode === "forecast" &&
+                                forecastMonths === monthCount
+                                    ? "selectedMode"
+                                    : ""
+                            }
+                            key={monthCount}
+                            type="button"
+                            onClick={() => changeForecastMonths(monthCount)}
+                        >
+                            {monthCount}ヶ月予測
+                        </button>
+                    ))}
                 </section>
 
                 {mode === "simulation" && (
