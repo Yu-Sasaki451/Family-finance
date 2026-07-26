@@ -4,7 +4,7 @@
 }
 
 .topSummaryContainer {
-    width: min(980px, calc(100% - 32px));
+    width: min(1120px, calc(100% - 32px));
 }
 
 .indexTitle {
@@ -380,6 +380,7 @@
     padding: 10px;
     border-bottom: 1px solid gray;
     text-align: center;
+    vertical-align: middle;
 }
 
 .monthlyDetailsTable tbody tr:last-child td {
@@ -400,6 +401,7 @@
     background-color: #666;
     color: white;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .expenseActions .deleteExpenseButton {
@@ -471,6 +473,19 @@
 
     .categoryTotalGrid {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 701px) {
+    .monthlyDetailsTable th {
+        white-space: nowrap;
+    }
+
+    .monthlyDetailsTable td:nth-child(1),
+    .monthlyDetailsTable td:nth-child(4),
+    .monthlyDetailsTable td:nth-child(6),
+    .monthlyDetailsTable td:nth-child(8) {
+        white-space: nowrap;
     }
 }
 
