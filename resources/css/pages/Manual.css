@@ -40,8 +40,8 @@
 }
 
 .manualQuickLinks {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 10px;
     margin-bottom: 18px;
 }
@@ -51,6 +51,7 @@
     border: 1px solid #b8cdd5;
     border-radius: 8px;
     background-color: #f8fcfd;
+    text-align: center;
 }
 
 .manualNotice {
@@ -68,7 +69,8 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
     gap: 28px;
-    align-items: center;
+    align-items: start;
+    scroll-margin-top: 16px;
     margin-top: 24px;
     padding: 28px;
     border: 2px solid #ded2c2;
@@ -78,6 +80,7 @@
 
 .manualSectionText {
     min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .manualStepNumber {
@@ -113,16 +116,50 @@
     line-height: 1.85;
 }
 
-.manualSection li + li {
+.manualSection li + li,
+.manualTipList li + li {
     margin-top: 6px;
+}
+
+.manualTipList {
+    margin-top: 18px;
+    padding: 16px 18px;
+    border-radius: 8px;
+    background-color: #fffaf2;
+}
+
+.manualTipList h3 {
+    margin: 0 0 8px;
+    color: #6b4f2a;
+    font-size: 19px;
+}
+
+.manualTipList ul {
+    margin: 0;
+    padding-left: 1.2em;
+    font-size: 17px;
+    line-height: 1.75;
 }
 
 .manualSection img {
     display: block;
     width: 100%;
+    height: auto;
     border: 1px solid #d8d8d8;
     border-radius: 8px;
     background-color: #f7f7f7;
+}
+
+@media (max-width: 960px) {
+    .manualSection {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .manualSection img {
+        max-width: 640px;
+        margin: 0 auto;
+    }
 }
 
 @media (max-width: 760px) {
@@ -144,22 +181,11 @@
         text-align: center;
     }
 
-    .manualQuickLinks {
-        display: grid;
-        grid-template-columns: 1fr;
-    }
-
-    .manualQuickLinks a {
-        text-align: center;
-    }
-
     .manualNotice {
         font-size: 16px;
     }
 
     .manualSection {
-        grid-template-columns: 1fr;
-        gap: 18px;
         padding: 20px;
     }
 
@@ -168,7 +194,8 @@
     }
 
     .manualSection p,
-    .manualSection ol {
+    .manualSection ol,
+    .manualTipList ul {
         font-size: 16px;
     }
 }

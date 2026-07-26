@@ -495,7 +495,7 @@ const CashFlowForecast = () => {
             ? Object.values(errors).flat()[0]
             : requestError.response?.status === 500
               ? "保存用テーブルが未作成です。マイグレーションを実行してください。"
-              : "収支計算の保存に失敗しました。";
+              : "予測の保存に失敗しました。";
     };
 
     const saveForecast = async (e) => {
@@ -513,7 +513,7 @@ const CashFlowForecast = () => {
                 variable_expenses: cleanItems(form.variable_expenses),
             });
 
-            setMessage("収支計算を保存しました。");
+            setMessage("予測を保存しました。");
             setError("");
             await getForecast();
         } catch (requestError) {
@@ -535,7 +535,7 @@ const CashFlowForecast = () => {
                 ),
             });
 
-            setMessage("1ヶ月シミュレーションを保存しました。");
+            setMessage("1ヶ月予測を保存しました。");
             setError("");
             await getSimulation(simulationScope);
         } catch (requestError) {
@@ -727,7 +727,7 @@ const CashFlowForecast = () => {
         <>
             <Header />
             <main className="forecastContainer">
-                <h1 className="forecastTitle">収支計算</h1>
+                <h1 className="forecastTitle">予測</h1>
 
                 {message && <p className="forecastMessage">{message}</p>}
                 {error && <p className="forecastError">{error}</p>}
@@ -738,7 +738,7 @@ const CashFlowForecast = () => {
                         type="button"
                         onClick={() => setMode("simulation")}
                     >
-                        1ヶ月シミュレーション
+                        1ヶ月予測
                     </button>
                     {FORECAST_MONTH_OPTIONS.map((monthCount) => (
                         <button

@@ -48,7 +48,7 @@ const Header = () => {
                         className="headerLink navRightLink"
                         to={ROUTES.CASH_FLOW_FORECAST}
                     >
-                        収支計算
+                        予測
                     </Link>
                     <Link
                         className="headerLink navRightLink"
