@@ -189,6 +189,7 @@ class MonthlyExpenseService
 
     private function netAmount(Expense $expense): int
     {
+        // 精算で実際に支払った扱いにする金額。どのカテゴリでも収入を先に差し引く。
         return $expense->amount - ($expense->income ?? 0);
     }
 
@@ -199,6 +200,7 @@ class MonthlyExpenseService
 
     private function sharedAmount(Expense $expense): int
     {
+        // 共有額は、差引金額から個人だけが負担する分をさらに外した金額。
         return $this->netAmount($expense) - $this->personalTotal($expense);
     }
 }

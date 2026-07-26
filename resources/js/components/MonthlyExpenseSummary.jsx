@@ -313,6 +313,7 @@ const MonthlyExpenseSummary = ({
                                 onChange={changeEditingExpense}
                             />
                         </label>
+                        {/* 収入はカテゴリ共通なので、編集時もカテゴリ変更で消さずに残す。 */}
                         <label>
                             収入
                             <input

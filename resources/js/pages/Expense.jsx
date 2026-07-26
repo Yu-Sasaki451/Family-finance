@@ -125,6 +125,7 @@ const Expense = () => {
             user_id: Number(form.user_id),
             category_id: Number(form.category_id),
             amount: cleanAmount(form.amount),
+            // 収入は電気代だけでなく、どのカテゴリでも支出から差し引く。
             income: cleanAmount(form.income),
             note: form.note.trim() || null,
             personal_expenses: form.personal_expenses.map((item) => ({
@@ -161,6 +162,7 @@ const Expense = () => {
         (total, item) => total + Number(item.amount || 0),
         0,
     );
+    // 画面上の差引金額は「合計金額 - 収入」。個人分はこの後で共有分から外す。
     const netAmount = Number(form.amount || 0) - Number(form.income || 0);
     const sharedAmount = netAmount - personalTotal;
 

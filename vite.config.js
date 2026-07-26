@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
     server: {
+        // スマホからPCのIPやローカル名で開いたときに、Viteが403で拒否しないようにする。
         allowedHosts: true,
     },
     plugins: [

@@ -15,6 +15,7 @@ class ExpenseService
     {
         return [
             'users' => $family->users()->orderBy('users.id')->get(['users.id', 'users.name']),
+            // 収入はカテゴリ共通で使えるため、電気代かどうかの判定フラグは返さない。
             'categories' => Category::orderBy('id')->get(['id', 'name']),
         ];
     }

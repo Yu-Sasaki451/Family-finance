@@ -77,6 +77,7 @@ class ExpenseRequest extends FormRequest
                 $personalTotal = collect($this->input('personal_expenses', []))
                     ->sum('amount');
 
+                // 個人分は「収入を引く前の合計金額」から指定するため、合計金額だけを上限にする。
                 if ($personalTotal > $amount) {
                     $validator->errors()->add(
                         'personal_expenses',
