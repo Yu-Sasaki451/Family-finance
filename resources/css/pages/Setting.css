@@ -25,6 +25,12 @@
     text-decoration: none;
 }
 
+.manualMenuLink {
+    border-color: #1f5f75;
+    background-color: #e9f5f8;
+    color: #1f4351;
+}
+
 @media (max-width: 700px) {
     .settingContainer {
         width: calc(100% - 24px);

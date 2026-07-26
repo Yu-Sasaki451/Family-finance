@@ -20,6 +20,12 @@ const Setting = () => {
                     <Link className="settingMenuLink" to={ROUTES.FAMILY}>
                         グループ
                     </Link>
+                    <Link
+                        className="settingMenuLink manualMenuLink"
+                        to={ROUTES.MANUAL}
+                    >
+                        使い方マニュアル
+                    </Link>
                 </div>
             </main>
         </>

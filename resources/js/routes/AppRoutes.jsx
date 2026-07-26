@@ -8,6 +8,7 @@ import CashFlowForecast from "../pages/CashFlowForecast";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Family from "../pages/Family";
+import Manual from "../pages/Manual";
 import { Navigate, Routes, Route, useLocation } from "react-router-dom";
 import { ROUTES } from "./routes";
 import { useAuth } from "../auth/AuthContext";
@@ -37,6 +38,7 @@ const AppRoutes = () => {
             <Route path={ROUTES.RATIO} element={<ProtectedRoute><Ratio /></ProtectedRoute>}></Route>
             <Route path={ROUTES.EXPENSE} element={<ProtectedRoute><Expense /></ProtectedRoute>}></Route>
             <Route path={ROUTES.SETTING} element={<ProtectedRoute><Setting /></ProtectedRoute>}></Route>
+            <Route path={ROUTES.MANUAL} element={<ProtectedRoute><Manual /></ProtectedRoute>}></Route>
             <Route path={ROUTES.SUMMARY} element={<ProtectedRoute><Summary /></ProtectedRoute>}></Route>
             <Route path={ROUTES.CASH_FLOW_FORECAST} element={<ProtectedRoute><CashFlowForecast /></ProtectedRoute>}></Route>
             <Route path={ROUTES.FAMILY} element={<ProtectedRoute><Family /></ProtectedRoute>}></Route>
