@@ -175,13 +175,6 @@ const MonthlyExpenseSummary = ({
         setEditingExpense({
             ...editingExpense,
             [e.target.name]: value,
-            ...(e.target.name === "category_id" &&
-            !categories.find(
-                (category) =>
-                    category.id === Number(value) && category.is_electricity,
-            )
-                ? { income: "" }
-                : {}),
         });
     };
 
@@ -252,12 +245,6 @@ const MonthlyExpenseSummary = ({
         setEditingExpense(null);
     };
 
-    const isEditingElectricity = categories.find(
-        (category) =>
-            category.id === Number(editingExpense?.category_id) &&
-            category.is_electricity,
-    );
-
     const renderPersonalExpenses = (expense) => {
         return expense.personal_expenses.length > 0
             ? expense.personal_expenses.map((item) => (
@@ -326,18 +313,16 @@ const MonthlyExpenseSummary = ({
                                 onChange={changeEditingExpense}
                             />
                         </label>
-                        {isEditingElectricity && (
-                            <label>
-                                売電収入
-                                <input
-                                    name="income"
-                                    type="number"
-                                    min="0"
-                                    value={editingExpense.income}
-                                    onChange={changeEditingExpense}
-                                />
-                            </label>
-                        )}
+                        <label>
+                            収入
+                            <input
+                                name="income"
+                                type="number"
+                                min="0"
+                                value={editingExpense.income}
+                                onChange={changeEditingExpense}
+                            />
+                        </label>
                         <label>
                             メモ
                             <input
@@ -553,7 +538,7 @@ const MonthlyExpenseSummary = ({
                         >
                             <span>{formatMonth(month.month)}</span>
                             <strong>{formatAmount(summaryAmount(month))}</strong>
-                            <small>売電・個人分を除外済み</small>
+                            <small>収入・個人分を除外済み</small>
                             <small>{month.count}件</small>
                         </button>
                     ))}
@@ -651,7 +636,7 @@ const MonthlyExpenseSummary = ({
                                                                             支払者
                                                                         </th>
                                                                         <th>
-                                                                            売電収入
+                                                                            収入
                                                                         </th>
                                                                         <th>
                                                                             個人分
@@ -684,7 +669,7 @@ const MonthlyExpenseSummary = ({
                                                                                             expense.user
                                                                                         }
                                                                                     </td>
-                                                                                    <td data-label="売電収入">
+                                                                                    <td data-label="収入">
                                                                                         {expense.income
                                                                                             ? formatAmount(
                                                                                                   expense.income,
@@ -829,7 +814,7 @@ const MonthlyExpenseSummary = ({
                                         <th>日付</th>
                                         <th>カテゴリ</th>
                                         <th>支払者</th>
-                                        <th>売電収入</th>
+                                        <th>収入</th>
                                         <th>個人分</th>
                                         <th>集計金額</th>
                                         <th>メモ</th>
@@ -849,7 +834,7 @@ const MonthlyExpenseSummary = ({
                                                 <td data-label="支払者">
                                                     {expense.user}
                                                 </td>
-                                                <td data-label="売電収入">
+                                                <td data-label="収入">
                                                     {expense.income
                                                         ? formatAmount(
                                                               expense.income,

@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Category;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -62,8 +61,8 @@ class ExpenseRequest extends FormRequest
             'amount.required' => '合計金額を入力してください。',
             'amount.integer' => '合計金額は整数で入力してください。',
             'amount.min' => '合計金額は1円以上で入力してください。',
-            'income.integer' => '売電収入は整数で入力してください。',
-            'income.min' => '売電収入は0円以上で入力してください。',
+            'income.integer' => '収入は整数で入力してください。',
+            'income.min' => '収入は0円以上で入力してください。',
             'spent_at.required' => '支払日を入力してください。',
             'personal_expenses.*.amount.integer' => '個人分は整数で入力してください。',
             'personal_expenses.*.amount.min' => '個人分は0円以上で入力してください。',
@@ -75,22 +74,13 @@ class ExpenseRequest extends FormRequest
         return [
             function (Validator $validator) {
                 $amount = (int) $this->input('amount');
-                $income = (int) $this->input('income');
                 $personalTotal = collect($this->input('personal_expenses', []))
                     ->sum('amount');
-                $category = Category::find($this->input('category_id'));
-
-                if ($income > 0 && $category?->name !== '電気代') {
-                    $validator->errors()->add(
-                        'income',
-                        '売電収入は電気代の場合のみ入力できます。',
-                    );
-                }
 
                 if ($personalTotal > $amount) {
                     $validator->errors()->add(
                         'personal_expenses',
-                        '個人分の合計は電気代以下にしてください。',
+                        '個人分の合計は合計金額以下にしてください。',
                     );
                 }
             },

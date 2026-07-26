@@ -192,28 +192,7 @@ class ExpenseApiTest extends TestCase
             ->assertJsonValidationErrors('personal_expenses');
     }
 
-    public function test_electricity_expense_can_be_stored_with_solar_income(): void
-    {
-        [$family, $husband] = $this->createFamilyUsers(['夫']);
-        $electricity = Category::create(['name' => '電気代']);
-
-        $this->postJson('/api/expenses', [
-            'user_id' => $husband->id,
-            'category_id' => $electricity->id,
-            'amount' => 10000,
-            'income' => 3000,
-            'spent_at' => '2026-06-09',
-        ])->assertCreated()
-            ->assertJsonFragment(['income' => 3000]);
-
-        $this->assertDatabaseHas('expenses', [
-            'category_id' => $electricity->id,
-            'amount' => 10000,
-            'income' => 3000,
-        ]);
-    }
-
-    public function test_solar_income_cannot_be_stored_for_other_categories(): void
+    public function test_expense_can_be_stored_with_income(): void
     {
         [$family, $husband] = $this->createFamilyUsers(['夫']);
         $food = Category::create(['name' => '食費']);
@@ -224,8 +203,35 @@ class ExpenseApiTest extends TestCase
             'amount' => 10000,
             'income' => 3000,
             'spent_at' => '2026-06-09',
-        ])->assertUnprocessable()
-            ->assertJsonValidationErrors('income');
+        ])->assertCreated()
+            ->assertJsonFragment(['income' => 3000]);
+
+        $this->assertDatabaseHas('expenses', [
+            'category_id' => $food->id,
+            'amount' => 10000,
+            'income' => 3000,
+        ]);
+    }
+
+    public function test_income_can_be_stored_for_other_categories(): void
+    {
+        [$family, $husband] = $this->createFamilyUsers(['夫']);
+        $dailyGoods = Category::create(['name' => '日用品']);
+
+        $this->postJson('/api/expenses', [
+            'user_id' => $husband->id,
+            'category_id' => $dailyGoods->id,
+            'amount' => 10000,
+            'income' => 3000,
+            'spent_at' => '2026-06-09',
+        ])->assertCreated()
+            ->assertJsonFragment(['income' => 3000]);
+
+        $this->assertDatabaseHas('expenses', [
+            'category_id' => $dailyGoods->id,
+            'amount' => 10000,
+            'income' => 3000,
+        ]);
     }
 
     public function test_expense_and_personal_expenses_can_be_updated(): void

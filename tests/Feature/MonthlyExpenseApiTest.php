@@ -264,28 +264,28 @@ class MonthlyExpenseApiTest extends TestCase
             ]);
     }
 
-    public function test_solar_income_is_subtracted_from_monthly_total_and_settlement(): void
+    public function test_income_is_subtracted_from_monthly_total_and_settlement(): void
     {
         [$family, $husband, $wife] = $this->createFamilyUsers();
-        $electricity = Category::create(['name' => '電気代']);
+        $food = Category::create(['name' => '食費']);
 
         Ratio::create([
             'family_id' => $family->id,
             'user_id' => $husband->id,
-            'category_id' => $electricity->id,
+            'category_id' => $food->id,
             'ratio' => 0.5,
         ]);
         Ratio::create([
             'family_id' => $family->id,
             'user_id' => $wife->id,
-            'category_id' => $electricity->id,
+            'category_id' => $food->id,
             'ratio' => 0.5,
         ]);
 
         Expense::create([
             'family_id' => $family->id,
             'user_id' => $husband->id,
-            'category_id' => $electricity->id,
+            'category_id' => $food->id,
             'amount' => 10000,
             'income' => 3000,
             'spent_at' => '2026-06-09',

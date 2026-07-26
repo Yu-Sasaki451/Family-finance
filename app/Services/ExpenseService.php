@@ -15,12 +15,7 @@ class ExpenseService
     {
         return [
             'users' => $family->users()->orderBy('users.id')->get(['users.id', 'users.name']),
-            'categories' => Category::orderBy('id')->get(['id', 'name'])
-                ->map(fn ($category) => [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'is_electricity' => $category->name === '電気代',
-                ]),
+            'categories' => Category::orderBy('id')->get(['id', 'name']),
         ];
     }
 

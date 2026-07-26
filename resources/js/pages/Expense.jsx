@@ -56,13 +56,6 @@ const Expense = () => {
         setForm({
             ...form,
             [e.target.name]: value,
-            ...(e.target.name === "category_id" &&
-            !categories.find(
-                (category) =>
-                    category.id === Number(value) && category.is_electricity,
-            )
-                ? { income: "" }
-                : {}),
         });
     };
 
@@ -132,7 +125,7 @@ const Expense = () => {
             user_id: Number(form.user_id),
             category_id: Number(form.category_id),
             amount: cleanAmount(form.amount),
-            income: isElectricity ? cleanAmount(form.income) : null,
+            income: cleanAmount(form.income),
             note: form.note.trim() || null,
             personal_expenses: form.personal_expenses.map((item) => ({
                 user_id: Number(item.user_id),
@@ -168,14 +161,7 @@ const Expense = () => {
         (total, item) => total + Number(item.amount || 0),
         0,
     );
-    const isElectricity = categories.find(
-        (category) =>
-            category.id === Number(form.category_id) &&
-            category.is_electricity,
-    );
-    const netAmount =
-        Number(form.amount || 0) -
-        (isElectricity ? Number(form.income || 0) : 0);
+    const netAmount = Number(form.amount || 0) - Number(form.income || 0);
     const sharedAmount = netAmount - personalTotal;
 
     return (
@@ -255,35 +241,31 @@ const Expense = () => {
                         </div>
                     </div>
 
-                    {isElectricity && (
-                        <>
-                            <div className="expenseFormGroup">
-                                <label htmlFor="income">売電収入</label>
-                                <div className="expenseAmount">
-                                    <input
-                                        id="income"
-                                        name="income"
-                                        type="number"
-                                        min="0"
-                                        placeholder="0"
-                                        value={form.income}
-                                        onChange={changeForm}
-                                    />
-                                    <span>円</span>
-                                </div>
-                            </div>
+                    <div className="expenseFormGroup">
+                        <label htmlFor="income">収入</label>
+                        <div className="expenseAmount">
+                            <input
+                                id="income"
+                                name="income"
+                                type="number"
+                                min="0"
+                                placeholder="0"
+                                value={form.income}
+                                onChange={changeForm}
+                            />
+                            <span>円</span>
+                        </div>
+                    </div>
 
-                            <div className="netAmount">
-                                <span>差引金額</span>
-                                <strong>{netAmount.toLocaleString()}円</strong>
-                            </div>
-                        </>
-                    )}
+                    <div className="netAmount">
+                        <span>差引金額</span>
+                        <strong>{netAmount.toLocaleString()}円</strong>
+                    </div>
 
                     <fieldset className="personalExpenseFieldset">
                         <legend>個人分</legend>
                         <p className="personalExpenseDescription">
-                            売電収入を引く前の合計金額から、個人で負担する分を入力してください。
+                            収入を引く前の合計金額から、個人で負担する分を入力してください。
                         </p>
 
                         {users.map((user) => {
