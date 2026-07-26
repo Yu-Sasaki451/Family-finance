@@ -322,3 +322,15 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 360px) {
+    .forecastScopeButtons {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .forecastScopeButtons button {
+        width: 100%;
+        min-width: 0;
+    }
+}

@@ -694,3 +694,10 @@
         min-height: 46px;
     }
 }
+
+@media (max-width: 360px) {
+    .monthlyTrendChart {
+        grid-template-columns: repeat(12, minmax(28px, 1fr));
+        overflow-x: auto;
+    }
+}
