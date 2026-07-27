@@ -16,6 +16,7 @@ return new class extends Migration
 
         Schema::table('cash_flow_forecasts', function (Blueprint $table) {
             if (! Schema::hasColumn('cash_flow_forecasts', 'simulation_incomes')) {
+                // 1ヶ月予測は月別ではないため、見出し名と金額だけのJSON配列で保存する。
                 $table->json('simulation_incomes')->nullable();
             }
 

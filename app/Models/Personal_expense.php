@@ -9,6 +9,7 @@ class Personal_expense extends Model
 {
     use HasFactory;
 
+    // 個人分は「共有計算から外し、指定ユーザー本人の負担に足す」ためのデータ。
     protected $fillable = ['expense_id','user_id','amount','note'];
 
     protected $casts = [

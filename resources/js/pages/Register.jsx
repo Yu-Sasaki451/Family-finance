@@ -26,6 +26,7 @@ const Register = () => {
             }
 
             try {
+                // 招待リンクから来た場合は、参加先グループと指定メールアドレスを先に取得する。
                 const response = await axios.get(`/api/invitations/${inviteToken}`);
 
                 setInvite(response.data);
@@ -54,6 +55,7 @@ const Register = () => {
 
         try {
             await register(form);
+            // 登録に成功したらトークンも保存済みなので、そのままトップページへ移動する。
             navigate(ROUTES.INDEX, { replace: true });
         } catch (requestError) {
             const errors = requestError.response?.data?.errors;

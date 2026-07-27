@@ -13,6 +13,7 @@ class CashFlowSimulationRequest extends FormRequest
 
     public function rules(): array
     {
+        // 1ヶ月予測は月別配列を持たず、見出し名と金額だけを保存する。
         return [
             'scope' => ['required', 'in:personal,group'],
             'incomes' => ['present', 'array'],

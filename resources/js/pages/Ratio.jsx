@@ -25,6 +25,7 @@ const Ratio = () => {
     }, []);
 
     const changeRatio = (categoryId, userId, ratio) => {
+        // 変更中の割合は画面上の状態だけ更新し、保存ボタンでまとめてAPIへ送る。
         setCategories(
             categories.map((category) =>
                 category.id === categoryId
@@ -43,6 +44,7 @@ const Ratio = () => {
 
     const updateRatio = async (category) => {
         try {
+            // カテゴリ1つ分の全員の割合をまとめて保存する。合計100%チェックはサーバー側で行う。
             await axios.put(`/api/ratios/${category.id}`, {
                 ratios: category.ratios,
             });

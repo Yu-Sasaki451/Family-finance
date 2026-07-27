@@ -26,6 +26,7 @@ const Expense = () => {
         try {
             const response = await axios.get("/api/expenses/options");
 
+            // 支出登録に必要な選択肢を読み込み、個人分入力欄もメンバー分だけ用意する。
             setUsers(response.data.users);
             setCategories(response.data.categories);
             setPersonalAmountInputs(
@@ -73,6 +74,7 @@ const Expense = () => {
 
         amounts[index] = value;
 
+        // 空欄行を増やしすぎないようにしつつ、最後の行へ入力したら次の空欄を自動で出す。
         const inputAmounts = amounts.filter(
             (amount, amountIndex) =>
                 amount !== "" || amountIndex === amounts.length - 1,
@@ -86,6 +88,7 @@ const Expense = () => {
             ...personalAmountInputs,
             [userId]: inputAmounts,
         });
+        // 同じ人の複数入力欄は、合計してAPIへ送る1つの個人分金額にまとめる。
         changePersonalExpense(
             userId,
             "amount",
@@ -116,6 +119,7 @@ const Expense = () => {
     };
 
     const cleanAmount = (value) => {
+        // 空欄は0円ではなく未入力として送り、サーバー側のnullableと合わせる。
         return value === "" || value === null ? null : Number(value);
     };
 
@@ -144,6 +148,7 @@ const Expense = () => {
 
             await axios.post("/api/expenses", payload);
 
+            // 登録後は入力欄を戻し、登録した月の集計画面で結果をすぐ確認できるようにする。
             resetForm();
             setMessage("支出を登録しました。");
             setError("");

@@ -10,6 +10,7 @@ const Setting = () => {
             <main className="settingContainer">
                 <h1 className="settingTitle">設定</h1>
 
+                {/* 設定画面は、カテゴリ・割合・グループ・マニュアルへの入口だけをまとめる。 */}
                 <div className="settingMenu">
                     <Link className="settingMenuLink" to={ROUTES.CATEGORY}>
                         カテゴリ

@@ -10,6 +10,8 @@ class MonthlyExpenseService
     public function buildMonthlyReport(Family $family, ?string $selectedMonth): array
     {
         $users = $family->users()->orderBy('users.id')->get(['users.id', 'users.name']);
+
+        // 集計と精算に必要な関連データを先にまとめて読み込み、画面表示中の追加SQLを防ぐ。
         $expenses = Expense::with([
             'user:id,name',
             'category.ratios',
@@ -18,6 +20,7 @@ class MonthlyExpenseService
             ->orderByDesc('spent_at')
             ->get();
 
+        // 月カードに表示する金額は、収入と個人分を除いた共有対象額で集計する。
         $months = $expenses->groupBy(fn ($expense) => substr($expense->spent_at, 0, 7))
             ->map(fn ($items, $month) => [
                 'month' => $month,
@@ -51,10 +54,12 @@ class MonthlyExpenseService
             ->map(function ($items) {
                 $category = $items->first()->category;
 
+                // カテゴリごとの合計も、月合計と同じく共有対象額を使う。
                 return [
                     'category_id' => $category->id,
                     'category' => $category->name,
                     'personal_total' => $items->sum(fn ($expense) => $this->personalTotal($expense)),
+                    // 個人分は誰がいくら個別負担したかを、カテゴリ詳細の補足として出す。
                     'personal_totals' => $items
                         ->flatMap->personal_expenses
                         ->groupBy('user_id')
@@ -79,6 +84,7 @@ class MonthlyExpenseService
             ->map(function (Expense $expense) {
                 $netAmount = $this->netAmount($expense);
 
+                // 明細では元の合計、収入、差引後、共有対象額を分けて返し、画面側で確認しやすくする。
                 return [
                     'id' => $expense->id,
                     'spent_at' => $expense->spent_at,
@@ -124,6 +130,7 @@ class MonthlyExpenseService
         $burdens = $users->mapWithKeys(fn ($user) => [$user->id => 0])->all();
 
         foreach ($expenses as $expense) {
+            // その支出カテゴリに設定された、今のグループ用の負担割合だけを使う。
             $ratios = $expense->category->ratios
                 ->where('family_id', $expense->family_id)
                 ->keyBy('user_id');
@@ -145,6 +152,7 @@ class MonthlyExpenseService
             }
 
             $netAmount = $this->netAmount($expense);
+            // 実際に立て替えた人の支払額には、収入を差し引いた後の金額を加える。
             $paid[$expense->user_id] += $netAmount;
 
             $personalAmounts = $expense->personal_expenses
@@ -154,6 +162,7 @@ class MonthlyExpenseService
             $remainingSharedAmount = $sharedAmount;
 
             foreach ($users as $index => $user) {
+                // 丸め誤差で合計がずれないよう、最後の人に残額をそのまま割り当てる。
                 $sharedBurden = $index === $users->count() - 1
                     ? $remainingSharedAmount
                     : (int) round($sharedAmount * $ratios[$user->id]->ratio);
@@ -174,6 +183,7 @@ class MonthlyExpenseService
         $receiver = $results->firstWhere('difference', '>', 0);
         $payer = $results->firstWhere('difference', '<', 0);
 
+        // 差額がプラスの人は立て替え過多、マイナスの人は支払い不足として1件の送金にまとめる。
         return [
             'error' => null,
             'users' => $results,

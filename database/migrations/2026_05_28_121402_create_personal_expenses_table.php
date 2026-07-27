@@ -20,6 +20,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('expense_id');
             $table->foreignId('user_id');
+            // 家族共有ではなく、特定の人だけが負担する金額を保存する。
             $table->integer('amount');
             $table->string('note')->nullable();
             $table->timestamps();

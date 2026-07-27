@@ -19,6 +19,7 @@ class FamilyInvitationController extends Controller
             ]);
         }
 
+        // 招待リンクは推測されにくいランダムな文字列にし、7日で期限切れにする。
         $invitation = FamilyInvitation::create([
             'family_id' => $family->id,
             'invited_by_user_id' => $request->user()->id,
@@ -35,6 +36,7 @@ class FamilyInvitationController extends Controller
 
     public function show(string $token)
     {
+        // 登録画面で招待先グループ名を表示するため、未使用で期限内の招待だけ返す。
         $invitation = FamilyInvitation::with('family:id,name')
             ->where('token', $token)
             ->whereNull('accepted_at')

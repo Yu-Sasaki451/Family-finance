@@ -19,6 +19,7 @@ class CategoryController extends Controller
         $family = $request->user()->currentFamily();
 
         if ($family) {
+            // 新しいカテゴリを作ったら、割合設定画面で未設定にならないよう初期割合も作る。
             $this->createDefaultRatios($family, $category);
         }
 
@@ -46,6 +47,7 @@ class CategoryController extends Controller
         $userCount = $users->count();
 
         foreach ($users as $index => $user) {
+            // 既に割合がある場合は上書きせず、足りない分だけ初期値を追加する。
             Ratio::firstOrCreate(
                 [
                     'family_id' => $family->id,
@@ -62,15 +64,18 @@ class CategoryController extends Controller
     private function defaultRatio(string $categoryName, int $userIndex, int $userCount): float
     {
         if ($userCount === 1) {
+            // 1人だけのグループでは、その人が全額負担する。
             return 1.0;
         }
 
         if ($userCount === 2 && $categoryName === '家ローン') {
+            // 家ローンの初期値だけ、夫45%・妻55%の想定にしている。
             return $userIndex === 0 ? 0.45 : 0.55;
         }
 
         $baseRatio = floor(100 / $userCount) / 100;
 
+        // 人数で割り切れない端数は最後の人に寄せ、合計が100%になるようにする。
         return $userIndex === $userCount - 1
             ? 1 - ($baseRatio * ($userCount - 1))
             : $baseRatio;

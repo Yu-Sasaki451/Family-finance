@@ -27,12 +27,14 @@ const Login = () => {
         try {
             await login(form);
 
+            // 次回ログインしやすいよう、チェック時だけメールアドレスを端末に保存する。
             if (rememberEmail) {
                 localStorage.setItem("login_email", form.email);
             } else {
                 localStorage.removeItem("login_email");
             }
 
+            // 未ログインで弾かれた元ページがあれば、ログイン後そこへ戻す。
             navigate(location.state?.from?.pathname ?? ROUTES.INDEX, {
                 replace: true,
             });

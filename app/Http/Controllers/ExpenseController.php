@@ -20,6 +20,7 @@ class ExpenseController extends Controller
     {
         $family = $request->user()->currentFamily();
 
+        // 月別集計、カテゴリ別集計、明細、精算結果はサービス側でまとめて作る。
         return $this->monthlyExpenseService->buildMonthlyReport(
             $family,
             $request->validated('month'),
@@ -30,6 +31,7 @@ class ExpenseController extends Controller
     {
         $family = $request->user()->currentFamily();
 
+        // 支出登録と編集で使う「支払った人」と「カテゴリ」の選択肢を返す。
         return $this->expenseService->getOptions($family);
     }
 
@@ -38,6 +40,7 @@ class ExpenseController extends Controller
         $data = $request->validated();
         $family = $request->user()->currentFamily();
 
+        // 登録処理では、グループ外の人や割合未設定カテゴリをサービス側で防ぐ。
         $expense = $this->expenseService->create($family, $data);
 
         return $expense->load('personal_expenses');
@@ -48,6 +51,7 @@ class ExpenseController extends Controller
         $data = $request->validated();
         $family = $request->user()->currentFamily();
 
+        // URLの支出IDが別グループのものではないかも、サービス側で確認する。
         $expense = $this->expenseService->update($family, $expense, $data);
 
         return $expense->load('personal_expenses');

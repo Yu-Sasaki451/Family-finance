@@ -16,17 +16,21 @@ class CashFlowForecastController extends Controller
         $scope = $this->scope($request->query('scope'));
         $forecastMonths = $this->forecastMonths($request->query('forecast_months'));
         $ownerId = $this->ownerId($scope, $request->user()->id);
+
+        // 3ヶ月予測と6ヶ月予測は別データとして保存するため、月数まで条件に含める。
         $forecast = CashFlowForecast::where('family_id', $family->id)
             ->where('scope', $scope)
             ->where('owner_id', $ownerId)
             ->where('forecast_months', $forecastMonths)
             ->first();
+        // 1ヶ月予測は3ヶ月/6ヶ月の切り替えに左右されないため、別枠で読み込む。
         $simulationData = $this->simulationData($family->id, $scope, $ownerId);
 
         if ($forecast) {
             return array_merge($forecast->toArray(), $simulationData);
         }
 
+        // まだ保存がない場合は、今月から始まる空の入力欄を返す。
         $months = $this->months(now()->format('Y-m'));
 
         return array_merge([
@@ -48,6 +52,7 @@ class CashFlowForecastController extends Controller
         $forecastMonths = $request->forecastMonths();
         $ownerId = $this->ownerId($data['scope'], $request->user()->id);
 
+        // 同じグループ、同じ計算方法、同じ予測月数のデータは上書き保存する。
         $forecast = CashFlowForecast::updateOrCreate(
             [
                 'family_id' => $family->id,
@@ -81,6 +86,7 @@ class CashFlowForecastController extends Controller
             ->orderBy('forecast_months')
             ->first();
 
+        // 1ヶ月予測だけ先に保存された場合でも、最低限の本体データを作って保存できるようにする。
         if (! $forecast) {
             $forecast = new CashFlowForecast([
                 'family_id' => $family->id,
@@ -101,6 +107,7 @@ class CashFlowForecastController extends Controller
 
     private function scope(?string $scope): string
     {
+        // 不正なscopeが来た場合は、個人計算として扱って画面を壊さない。
         return in_array($scope, ['personal', 'group'], true)
             ? $scope
             : 'personal';
@@ -108,6 +115,7 @@ class CashFlowForecastController extends Controller
 
     private function ownerId(string $scope, int $userId): int
     {
+        // グループ予測は全員共通なのでowner_idを0にし、個人予測だけユーザーIDで分ける。
         return $scope === 'group' ? 0 : $userId;
     }
 
@@ -115,6 +123,7 @@ class CashFlowForecastController extends Controller
     {
         $forecastMonths = (int) ($forecastMonths ?? 3);
 
+        // 画面で扱う予測期間は3ヶ月と6ヶ月だけに固定する。
         return in_array($forecastMonths, [3, 6], true) ? $forecastMonths : 3;
     }
 
@@ -122,6 +131,7 @@ class CashFlowForecastController extends Controller
     {
         [$year, $month] = array_map('intval', explode('-', $startMonth));
 
+        // 保存がない初期表示用。先頭の月を開始月として使うため、今月からの月リストを作る。
         return collect(range(0, 2))
             ->map(fn ($index) => now()
                 ->setDate($year, $month, 1)
@@ -146,6 +156,7 @@ class CashFlowForecastController extends Controller
 
     private function simulationData(int $familyId, string $scope, int $ownerId): array
     {
+        // 1ヶ月予測は、3ヶ月/6ヶ月どちらの保存データに入っていても最初に見つかったものを使う。
         $forecast = CashFlowForecast::where('family_id', $familyId)
             ->where('scope', $scope)
             ->where('owner_id', $ownerId)

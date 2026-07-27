@@ -11,6 +11,7 @@ class CashFlowForecast extends Model
 
     protected $fillable = [
         'family_id',
+        // scopeはpersonal/group。owner_idと組み合わせて保存先を分ける。
         'scope',
         'owner_id',
         'forecast_months',
@@ -26,6 +27,7 @@ class CashFlowForecast extends Model
     ];
 
     protected $casts = [
+        // 予測の明細行はJSONで保存し、PHPでは配列として扱う。
         'fixed_incomes' => 'array',
         'variable_incomes' => 'array',
         'fixed_expenses' => 'array',

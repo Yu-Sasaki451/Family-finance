@@ -29,6 +29,7 @@ const MonthlyExpenseSummary = ({
                 params: month ? { month } : {},
             });
 
+            // APIで作った月一覧、カテゴリ集計、明細、精算結果をそのまま画面状態へ反映する。
             setMonths(response.data.months);
             setSelectedMonth(response.data.selected_month ?? "");
             setCategoryTotals(response.data.category_totals ?? []);
@@ -64,6 +65,7 @@ const MonthlyExpenseSummary = ({
         const params = new URLSearchParams(window.location.search);
         const queryMonth = params.get("month") ?? "";
 
+        // トップページでは常に今月、集計ページではURLのmonth指定があればその月を開く。
         getMonthlyExpenses(
             currentMonthOnly ? getCurrentMonth() : queryMonth,
         );
@@ -71,6 +73,7 @@ const MonthlyExpenseSummary = ({
     }, [currentMonthOnly]);
 
     const clearSelectedMonth = () => {
+        // 月選択を解除したときは、明細や精算結果も前の月の情報が残らないよう空にする。
         setSelectedMonth("");
         setCategoryTotals([]);
         setDetails([]);
@@ -83,6 +86,7 @@ const MonthlyExpenseSummary = ({
             return;
         }
 
+        // 別の月へ切り替える前に、開いている編集欄や詳細表示を閉じる。
         setEditingExpense(null);
         setMessage("");
         setShowDetails(false);
@@ -100,6 +104,7 @@ const MonthlyExpenseSummary = ({
     const changeSelectedMonth = (e) => {
         const month = e.target.value;
 
+        // セレクト式の月選択では、URLにもmonthを残して再読み込み後に同じ月を開けるようにする。
         setEditingExpense(null);
         setMessage("");
         setShowDetails(false);
@@ -131,6 +136,7 @@ const MonthlyExpenseSummary = ({
     };
 
     const summaryAmount = (item) => {
+        // 古いレスポンス互換のためtotalも見つつ、基本はshared_totalを画面の集計額として使う。
         return Number(item?.shared_total ?? item?.total ?? 0);
     };
 
@@ -145,6 +151,7 @@ const MonthlyExpenseSummary = ({
     };
 
     const startEditing = (expense) => {
+        // 編集フォーム用に、明細データをinputで扱いやすい形へコピーする。
         setEditingExpense({
             id: expense.id,
             spent_at: expense.spent_at,
@@ -202,6 +209,7 @@ const MonthlyExpenseSummary = ({
                 editingExpense,
             );
 
+            // 保存後は同じ月を再取得し、カテゴリ集計と精算結果も最新にする。
             setEditingExpense(null);
             setMessage("登録内容を変更しました。");
             await getMonthlyExpenses(selectedMonth);
@@ -223,6 +231,7 @@ const MonthlyExpenseSummary = ({
         try {
             await axios.delete(`/api/expenses/${expense.id}`);
 
+            // 削除後も同じ月を再取得し、合計や精算のずれを残さない。
             setEditingExpense(null);
             setMessage("登録内容を削除しました。");
             await getMonthlyExpenses(selectedMonth);
@@ -240,6 +249,7 @@ const MonthlyExpenseSummary = ({
     };
 
     const toggleCategoryDetails = (categoryId) => {
+        // カテゴリ詳細を開くときは、全体明細と編集中の行を閉じて表示を整理する。
         setSelectedCategoryId(isSelectedCategory(categoryId) ? null : categoryId);
         setShowDetails(false);
         setEditingExpense(null);

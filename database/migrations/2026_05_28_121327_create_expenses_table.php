@@ -20,7 +20,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id');
             $table->foreignId('category_id');
+            // amountはレシートや請求書の合計金額。収入や個人分を引く前の金額。
             $table->integer('amount');
+            // incomeは返金・補助・売上など、その支出から差し引く収入。カテゴリ共通で使う。
             $table->integer('income')->nullable();
             $table->date('spent_at');
             $table->string('note')->nullable();

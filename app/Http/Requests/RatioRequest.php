@@ -20,6 +20,7 @@ class RatioRequest extends FormRequest
             ? $family->users()->pluck('users.id')->all()
             : [];
 
+        // 割合はグループの全員分が揃っていることを必須にする。
         return [
             'ratios' => ['required', 'array', 'size:'.count($familyUserIds)],
             'ratios.*.user_id' => ['required', 'integer', 'distinct', Rule::in($familyUserIds)],
@@ -43,6 +44,7 @@ class RatioRequest extends FormRequest
             function (Validator $validator) {
                 $total = collect($this->input('ratios', []))->sum('ratio');
 
+                // 共有額を正しく割るため、カテゴリごとの割合合計は必ず100%にする。
                 if (abs($total - 100) > 0.001) {
                     $validator->errors()->add('ratios', '割合の合計を100%にしてください。');
                 }

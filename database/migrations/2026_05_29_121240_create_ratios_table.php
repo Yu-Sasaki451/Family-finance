@@ -20,6 +20,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id');
             $table->foreignId('category_id');
+            // 画面では50%と表示するが、DBでは0.50のような小数で保存する。
             $table->decimal('ratio',3,2);
             $table->timestamps();
         });

@@ -32,6 +32,7 @@ const Category = () => {
         e.preventDefault();
 
         try {
+            // 追加後すぐ画面に反映するため、APIの戻り値を一覧へ足す。
             const response = await axios.post("/api/categories", {
                 name: newCategoryName,
             });
@@ -45,6 +46,7 @@ const Category = () => {
     };
 
     const changeCategoryName = (id, name) => {
+        // 入力中の文字を先に画面へ反映し、変更ボタンを押したときにAPI保存する。
         setCategories(
             categories.map((category) =>
                 category.id === id ? { ...category, name } : category,
@@ -72,6 +74,7 @@ const Category = () => {
         try {
             await axios.delete(`/api/categories/${category.id}`);
 
+            // 削除成功後は、再取得せず手元の一覧から対象カテゴリだけ外す。
             setCategories(
                 categories.filter((item) => item.id !== category.id),
             );

@@ -13,6 +13,8 @@ class RatioController extends Controller
     {
         $family = request()->user()->currentFamily();
         $users = $family->users()->orderBy('users.id')->get(['users.id', 'users.name']);
+
+        // 画面ではカテゴリごとに全メンバーの割合を横並びで出すため、ここで表示用の形に整える。
         $categories = Category::with('ratios')->orderBy('id')->get()
             ->map(function (Category $category) use ($users, $family) {
                 return [
@@ -23,6 +25,7 @@ class RatioController extends Controller
                             ->where('family_id', $family->id)
                             ->firstWhere('user_id', $user->id);
 
+                        // DBは0.5のような小数で保存し、画面では50のような%表示に変換する。
                         return [
                             'user_id' => $user->id,
                             'ratio' => $ratio ? (float) $ratio->ratio * 100 : '',
@@ -39,6 +42,7 @@ class RatioController extends Controller
         $family = $request->user()->currentFamily();
 
         foreach ($request->validated('ratios') as $ratio) {
+            // 画面からは%で届くので、DBへ保存するときは0.5のような小数に戻す。
             Ratio::updateOrCreate(
                 [
                     'family_id' => $family->id,

@@ -15,6 +15,7 @@ class ExpenseRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        // ブラウザのinput値は文字列で届くため、金額やIDをバリデーション前に数値へ寄せる。
         $personalExpenses = collect($this->input('personal_expenses', []))
             ->map(fn ($item) => [
                 'user_id' => $this->integerValue($item['user_id'] ?? null),
@@ -39,6 +40,7 @@ class ExpenseRequest extends FormRequest
             ? $family->users()->pluck('users.id')->all()
             : [];
 
+        // 支払った人と個人分の人は、今のグループに所属している人だけ許可する。
         return [
             'user_id' => ['required', Rule::in($familyUserIds)],
             'category_id' => ['required', 'exists:categories,id'],
@@ -90,6 +92,7 @@ class ExpenseRequest extends FormRequest
 
     private function integerValue($value)
     {
+        // 空欄は未入力として扱い、0とは区別する。
         if ($value === null || $value === '') {
             return null;
         }
@@ -102,6 +105,7 @@ class ExpenseRequest extends FormRequest
             return (int) $value;
         }
 
+        // 数字以外の文字列はそのまま返し、integerルール側でエラーにする。
         return $value;
     }
 }

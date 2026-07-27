@@ -16,10 +16,13 @@ return new class extends Migration
         Schema::create('cash_flow_forecasts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('family_id');
+            // scopeはpersonal/group。個人予測とグループ予測を同じテーブルで分ける。
             $table->string('scope', 20);
+            // グループ予測はowner_id=0、個人予測はユーザーIDを入れる。
             $table->unsignedBigInteger('owner_id');
             $table->string('start_month', 7);
             $table->integer('current_balance');
+            // 各項目は「見出し名」と「月ごとの金額」をJSON配列で保存する。
             $table->json('fixed_incomes');
             $table->json('variable_incomes');
             $table->json('fixed_expenses');

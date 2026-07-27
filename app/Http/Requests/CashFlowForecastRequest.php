@@ -17,6 +17,7 @@ class CashFlowForecastRequest extends FormRequest
     {
         $forecastMonths = $this->forecastMonths();
 
+        // forecast_monthsに合わせて、各行の金額配列が3ヶ月分または6ヶ月分あるか確認する。
         return [
             'scope' => ['required', 'in:personal,group'],
             'forecast_months' => ['sometimes', 'integer', 'in:3,6'],
@@ -86,6 +87,7 @@ class CashFlowForecastRequest extends FormRequest
     {
         $forecastMonths = (int) $this->input('forecast_months', 3);
 
+        // 予測期間は画面で用意している3ヶ月/6ヶ月だけに固定する。
         return in_array($forecastMonths, self::ALLOWED_FORECAST_MONTHS, true)
             ? $forecastMonths
             : 3;

@@ -18,10 +18,12 @@ const ProtectedRoute = ({ children }) => {
     const location = useLocation();
 
     if (loading) {
+        // ログイン確認中に一瞬ログイン画面へ飛ばないよう、確認が終わるまで待つ。
         return <main className="loadingScreen">読み込み中...</main>;
     }
 
     if (!isAuthenticated) {
+        // 未ログインならログイン画面へ戻し、ログイン後に元のページへ戻れるよう場所を渡す。
         return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
     }
 

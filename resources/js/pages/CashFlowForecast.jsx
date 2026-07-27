@@ -17,6 +17,7 @@ const getCurrentMonth = () => {
 const buildMonths = (startMonth, forecastMonths = DEFAULT_FORECAST_MONTHS) => {
     const [year, month] = startMonth.split("-").map(Number);
 
+    // 開始月から、選択された月数分の年月を YYYY-MM 形式で作る。
     return Array.from({ length: forecastMonths }, (_, index) => {
         const date = new Date(year, month - 1 + index, 1);
         const forecastYear = date.getFullYear();
@@ -66,6 +67,7 @@ const emptySimulations = () => ({
 });
 
 const alignAmounts = (amounts, months) => {
+    // 開始月や予測月数を変えたとき、同じ月の入力値をできるだけ残す。
     return months.map((month, index) => {
         const amount = amounts.find((item) => item.month === month)?.amount;
 
@@ -82,6 +84,7 @@ const sameAmountForAllMonths = (item, months) => {
         amounts.find((amount) => String(amount.amount ?? "") !== "")
             ?.amount ?? "";
 
+    // 固定収入・固定支出は、最初に入力されている金額を全月へコピーする。
     return months.map((month) => ({
         month,
         amount,
@@ -90,6 +93,7 @@ const sameAmountForAllMonths = (item, months) => {
 
 const alignItems = (items, months, fixedAmount = false) => {
     if (!items.length) {
+        // 保存データがない場合でも、画面には最低1行の入力欄を出す。
         return [emptyItem(months)];
     }
 
@@ -140,6 +144,7 @@ const cleanAmount = (amount) => {
 };
 
 const cleanItems = (items, fixedAmount = false) => {
+    // 空行は保存せず、金額の空欄はnullとして送る。
     return items.filter(rowHasValue).map((item) => ({
         title: item.title,
         same_amount: fixedAmount,
@@ -190,6 +195,7 @@ const CashFlowForecast = () => {
         monthCount = forecastMonths,
     ) => {
         try {
+            // 3ヶ月/6ヶ月予測は、計算方法と月数ごとに保存データを分けて取得する。
             const response = await axios.get("/api/cash-flow-forecast", {
                 params: { scope, forecast_months: monthCount },
             });
@@ -203,6 +209,7 @@ const CashFlowForecast = () => {
             );
 
             setForecastMonths(responseForecastMonths);
+            // 保存済みデータを、現在表示する月数に合わせて入力欄へ流し込む。
             setForm({
                 scope,
                 start_month: startMonth,
@@ -241,6 +248,7 @@ const CashFlowForecast = () => {
                 },
             }));
         } catch {
+            // 取得に失敗しても入力画面自体は使えるよう、空フォームへ戻す。
             setForm((current) => ({
                 ...emptyForm(scope, monthCount),
                 current_balance:
@@ -256,6 +264,7 @@ const CashFlowForecast = () => {
 
     const getSimulation = async (scope) => {
         try {
+            // 1ヶ月予測は、個人用とグループ用を別々に保存・取得する。
             const response = await axios.get("/api/cash-flow-forecast", {
                 params: { scope },
             });
@@ -306,6 +315,7 @@ const CashFlowForecast = () => {
     const changeStartMonth = (value) => {
         const nextMonths = buildMonths(value, forecastMonths);
 
+        // 開始月を変えたら、固定/変動の各行も新しい月並びへ揃える。
         setForm({
             ...form,
             start_month: value,
@@ -403,6 +413,7 @@ const CashFlowForecast = () => {
                         type === "fixed_incomes" ||
                         type === "fixed_expenses"
                     ) {
+                        // 固定項目はどの月の欄を編集しても、全月を同じ金額にする。
                         return { ...amount, amount: value };
                     }
 
@@ -426,6 +437,7 @@ const CashFlowForecast = () => {
     const removeItem = (type, itemIndex) => {
         const nextItems = form[type].filter((_, index) => index !== itemIndex);
 
+        // 全行を消すと入力できなくなるため、最後の1行は空行として残す。
         setForm({
             ...form,
             [type]: nextItems.length ? nextItems : [emptyItem(months)],
@@ -433,6 +445,7 @@ const CashFlowForecast = () => {
     };
 
     const monthTotals = months.reduce((totals, month, index) => {
+        // 2ヶ月目以降の月初残高は、前月の月末予想残高を引き継ぐ。
         const startBalance =
             index === 0
                 ? Number(form.current_balance || 0)
@@ -456,6 +469,7 @@ const CashFlowForecast = () => {
         const incomeTotal = fixedIncomeTotal + variableIncomeTotal;
         const expenseTotal = fixedTotal + variableTotal;
 
+        // 月末予想残高は「月初残高 + 収入合計 - 支出合計」で計算する。
         totals.push({
             month,
             startBalance,
@@ -502,6 +516,7 @@ const CashFlowForecast = () => {
         e.preventDefault();
 
         try {
+            // 保存前に空行を除き、ブラウザ文字列の金額を数値またはnullに変換する。
             await axios.put("/api/cash-flow-forecast", {
                 scope: form.scope,
                 forecast_months: forecastMonths,
@@ -524,6 +539,7 @@ const CashFlowForecast = () => {
 
     const saveSimulation = async () => {
         try {
+            // 1ヶ月予測は月別ではないため、見出し名と金額だけを保存する。
             await axios.put("/api/cash-flow-forecast/simulation", {
                 scope: simulationScope,
                 incomes: cleanSimulationItems(simulation.incomes),

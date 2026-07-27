@@ -18,6 +18,7 @@ const Family = () => {
     const copyText = async (text) => {
         if (navigator.clipboard && window.isSecureContext) {
             try {
+                // HTTPSなど安全な環境では、標準のClipboard APIでコピーする。
                 await navigator.clipboard.writeText(text);
 
                 return true;
@@ -28,6 +29,7 @@ const Family = () => {
 
         const textarea = document.createElement("textarea");
 
+        // Clipboard APIが使えないスマホ/ブラウザ向けに、隠しtextareaでコピーを試す。
         textarea.value = text;
         textarea.setAttribute("readonly", "");
         textarea.style.position = "fixed";
@@ -72,6 +74,7 @@ const Family = () => {
             const response = await axios.post("/api/invitations");
             const newInviteUrl = response.data.invite_url;
 
+            // 作成した招待リンクは画面にも残し、コピー失敗時でも手動コピーできるようにする。
             setInviteUrl(newInviteUrl);
             setError("");
 
