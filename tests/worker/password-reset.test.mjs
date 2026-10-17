@@ -133,7 +133,7 @@ test("failed transaction keeps the old password, sessions and reset link", async
 
 test("missing email setup is explicitly unavailable and creates no token", async (t) => {
     const s = setup(t);
-    assert.deepEqual(await (await s.call("/api/auth/password-reset")).json(), { email_available: false });
+    assert.deepEqual(await (await s.call("/api/auth/password-reset")).json(), { available: true, email_available: false });
     assert.equal((await s.call("/api/auth/forgot-password", { email: "owner@example.com" })).status, 503);
     assert.equal(s.db.prepare("SELECT count(*) AS n FROM password_reset_tokens").get().n, 0);
 });
@@ -186,4 +186,13 @@ test("invalid reset attempts are rate limited and malformed JSON gets 400", asyn
     assert.equal((await s.reset("bad")).status, 429);
     assert.equal((await s.call("/api/auth/forgot-password", null)).status, 400);
     assert.equal((await s.call("/api/auth/forgot-password", [])).status, 400);
+});
+
+test("deployment before migration returns an unavailable response instead of a database error", async (t) => {
+    const s = setup(t, true);
+    s.db.exec("DROP TABLE password_reset_tokens; DROP TABLE password_reset_rate_limits;");
+    assert.deepEqual(await (await s.call("/api/auth/password-reset")).json(), { available: false, email_available: false });
+    assert.equal((await s.call("/api/auth/forgot-password", { email: "owner@example.com" })).status, 503);
+    assert.equal((await s.reset("invalid")).status, 503);
+    assert.equal(s.db.prepare("SELECT password FROM users WHERE id=1").get().password, "old-hash");
 });

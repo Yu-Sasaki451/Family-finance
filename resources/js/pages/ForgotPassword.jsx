@@ -7,6 +7,7 @@ import "../../css/pages/Auth.css";
 export default function ForgotPassword() {
     const [email, setEmail] = useState("");
     const [available, setAvailable] = useState(null);
+    const [ready, setReady] = useState(null);
     const [pending, setPending] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -14,7 +15,10 @@ export default function ForgotPassword() {
     useEffect(() => {
         const controller = new AbortController();
         axios.get("/api/auth/password-reset", { signal: controller.signal })
-            .then(({ data }) => setAvailable(data.email_available))
+            .then(({ data }) => {
+                setReady(data.available);
+                setAvailable(data.email_available);
+            })
             .catch((failure) => {
                 if (!axios.isCancel(failure)) setError("再設定の受付状況を確認できませんでした。画面を再読み込みしてください。");
             });
@@ -45,7 +49,8 @@ export default function ForgotPassword() {
                 {error && <p className="authError" role="alert">{error}</p>}
                 {message && <p className="authMessage" role="status">{message}</p>}
                 {available === null && !error && <p role="status">受付状況を確認しています...</p>}
-                {available === false && (
+                {ready === false && <p className="authMessage">パスワードの再設定は現在利用できません。時間をおいてお試しください。</p>}
+                {ready === true && available === false && (
                     <p className="authMessage">メールでの再設定は現在準備中です。管理者に再設定リンクの発行をご依頼ください。リンクを受け取ったら、新しいパスワードを設定できます。</p>
                 )}
                 {available === true && <>

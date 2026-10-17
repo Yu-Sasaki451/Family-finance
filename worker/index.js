@@ -79,7 +79,8 @@ async function handleApi(request, env, url, ctx) {
     }
 
     if (method === "GET" && path === "/auth/password-reset") {
-        return json({ email_available: Boolean(passwordResetMailConfig(env)) });
+        const available = await passwordResetAvailable(env);
+        return json({ available, email_available: available && Boolean(passwordResetMailConfig(env)) });
     }
 
     if (method === "POST" && path === "/auth/forgot-password") {
@@ -281,6 +282,19 @@ function passwordResetMailConfig(env) {
     }
 }
 
+async function passwordResetAvailable(env) {
+    const tables = await first(env,
+        "SELECT count(*) AS count FROM sqlite_master WHERE type = 'table' AND name IN ('password_reset_tokens', 'password_reset_rate_limits')",
+    );
+    return tables.count === 2;
+}
+
+async function requirePasswordResetAvailable(env) {
+    if (!(await passwordResetAvailable(env))) {
+        throw new HttpError(503, "パスワードの再設定は現在利用できません。時間をおいてお試しください。");
+    }
+}
+
 async function allowPasswordResetAttempt(env, key, limit) {
     const now = Date.now();
     const window = 15 * 60 * 1000;
@@ -296,6 +310,7 @@ async function allowPasswordResetAttempt(env, key, limit) {
 }
 
 async function requestPasswordReset(request, env, ctx) {
+    await requirePasswordResetAvailable(env);
     const data = await readJson(request);
     const email = text(data.email).toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
@@ -367,6 +382,7 @@ async function deliverPasswordReset(env, email, config) {
 }
 
 async function resetPassword(request, env) {
+    await requirePasswordResetAvailable(env);
     const ip = request.headers.get("CF-Connecting-IP") || "local";
     if (!(await allowPasswordResetAttempt(env, `reset-ip:${ip}`, 20))) {
         throw new HttpError(429, "しばらく待ってから、もう一度お試しください。");
