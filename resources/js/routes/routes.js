@@ -1,6 +1,8 @@
 export const ROUTES = {
     INDEX: "/",
     LOGIN: "/login",
+    FORGOT_PASSWORD: "/forgot-password",
+    RESET_PASSWORD: "/reset-password",
     REGISTER: "/register",
     CATEGORY: "/category",
     RATIO: "/ratio",

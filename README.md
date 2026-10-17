@@ -15,6 +15,7 @@
 - 支払額と負担額をもとにした2人間の精算額計算
 - 各カテゴリに対する収入の登録
 - スマートフォン表示への対応
+- 有効期限付きリンクによるパスワード再設定
 
 ## 精算の仕組み
 
@@ -29,12 +30,11 @@
 
 | 分類 | 技術 |
 | --- | --- |
-| バックエンド | PHP 8.1以上 / Laravel 10 |
+| バックエンド | Cloudflare Workers |
 | フロントエンド | React 19 / React Router / Axios |
 | ビルドツール | Vite 5 |
-| データベース | MySQL 8.4 |
-| 開発環境 | Docker / Laravel Sail |
-| テスト | PHPUnit |
+| データベース | Cloudflare D1 |
+| デプロイ | Wrangler |
 
 ## 画面構成
 
@@ -55,60 +55,86 @@ GitHub 上で確認できる Mermaid 形式の ER 図を用意しています。
 
 ### 必要なもの
 
-- Docker Desktop
-- Composer
+- Node.js 22 以上
+- Cloudflare アカウント
+- Wrangler
 
 ### セットアップ
 
 ```bash
 git clone git@github.com:Yu-Sasaki451/Family-finance.git
 cd family-finance
-cp .env.example .env
-composer install
-./vendor/bin/sail up -d
-./vendor/bin/sail artisan key:generate
-./vendor/bin/sail npm install
-./vendor/bin/sail artisan migrate
-./vendor/bin/sail artisan db:seed --class=UserSeeder
-./vendor/bin/sail artisan db:seed --class=CategorySeeder
-./vendor/bin/sail artisan db:seed --class=RatioSeeder
-./vendor/bin/sail npm run dev
+npm install
+npm run build
+npm run d1:migrate:local
+npm run worker:dev
 ```
 
 セットアップ後、以下の URL へアクセスします。
 
-- アプリ: [http://localhost](http://localhost)
-- phpMyAdmin: [http://localhost:8080](http://localhost:8080)
+- アプリ: [http://localhost:8787](http://localhost:8787)
 
-フロントエンドの開発サーバーを停止して利用する場合は、事前に以下を実行してください。
+### Cloudflare へのデプロイ
+
+最初に D1 データベースを作成します。
 
 ```bash
-./vendor/bin/sail npm run build
+npx wrangler d1 create family-finance
 ```
+
+表示された `database_id` を `wrangler.jsonc` の `database_id` に入れてください。
+
+その後、remote の D1 に migration を適用してからデプロイします。
+
+```bash
+npm run d1:migrate:remote
+npm run deploy
+```
+
+### パスワードの再設定
+
+ログイン画面の「パスワードをお忘れの方」から再設定を案内します。
+リンクは30分間・1回のみ有効です。データベースにはリンクのトークン自体を保存せず、SHA-256ハッシュを保存します。
+再設定が完了すると、そのユーザーの既存セッションと他の再設定リンクをすべて無効にします。
+
+メール配信にはResendの送信用APIキーと認証済みの送信元が必要です。
+`wrangler.jsonc` の `vars.APP_URL` を本番URLに合わせ、以下のシークレットを設定します。
+
+```bash
+npx wrangler secret put RESEND_API_KEY
+npx wrangler secret put PASSWORD_RESET_FROM
+```
+
+送信元の例は `Family Finance <noreply@example.com>` です。
+未設定の場合、画面に管理者への問い合わせを案内し、送信できたという表示は行いません。
+ローカルの配信テストには `.dev.vars.example` を `.dev.vars` にコピーして設定します。
+
+管理者はCloudflareにログインできる端末から、メール配信なしでもリンクを発行できます。
+
+```bash
+npm run password:reset-link -- --email user@example.com --remote
+```
+
+表示されるリンクはアカウント所有者にのみ渡してください。発行だけではパスワードや既存セッションは変更されません。
+新しいパスワードは、所有者がリンクを開いて設定します。
+ローカル環境での確認には `--remote` の代わりに `--local` を指定します。
+
+Workerの認証テストは `npm run test:worker` で実行します（Node.js 22.13以上）。
 
 ### 初期データ
 
-Seeder を実行すると、以下のデータが登録されます。
+D1 migration で以下のカテゴリが自動登録されます。
 
-- ユーザー: `夫`、`妻`
-- カテゴリ: 食費、電気代、水道代、日用品、交通費、通信費、家ローン、その他
-- 負担割合: 家ローンのみ `夫 45% / 妻 55%`、その他は `夫 50% / 妻 50%`
+- 食費
+- 電気代
+- 水道代
+- 日用品
+- 交通費
+- 通信費
+- 家ローン
+- その他
 
-> `DatabaseSeeder` は現在、未作成の `ExpenseSeeder` を参照しています。そのため、上記手順では利用可能な Seeder を個別に実行しています。
-
-## テスト
-
-```bash
-./vendor/bin/sail artisan test
-```
-
-主に以下の API 動作をテストしています。
-
-- カテゴリの登録・編集・削除
-- 支出と個人分の登録・編集・削除
-- 収入の登録と差引計算
-- 月別集計と精算計算
-- カテゴリごとの負担割合設定
+ユーザーは画面の新規登録から作成します。最初のユーザー登録時にグループが作られ、カテゴリごとの初期割合も自動作成されます。
 
 ## API
 
@@ -130,28 +156,23 @@ Seeder を実行すると、以下のデータが登録されます。
 
 ```text
 app/
-├── Http/
-│   ├── Controllers/    # APIの処理
-│   └── Requests/       # 入力値のバリデーション
-└── Models/             # Eloquentモデル
+└── ...                 # 旧Laravel実装。Worker移行時の参照用
 
-database/
-├── migrations/         # テーブル定義
-└── seeders/            # 初期データ
+d1/
+└── migrations/         # D1用テーブル定義と初期カテゴリ
 
 resources/
 ├── css/                # 画面のスタイル
-├── js/                 # Reactコンポーネントと画面
-└── views/              # Reactを読み込むBlade
+└── js/                 # Reactコンポーネントと画面
 
-routes/
-├── api.php             # APIルート
-└── web.php             # 画面表示ルート
+worker/
+└── index.js            # Cloudflare Workers API
 ```
 
 ## 注意事項
 
-- 現在はログイン機能を使用せず、Seeder で登録した2人のユーザーを対象にしています。
+- 本番デプロイ前に、`wrangler.jsonc` の `database_id` を実際の D1 database id に変更してください。
+- Render/PostgreSQL の既存データを D1 へ移す処理は、別途エクスポート/インポートが必要です。
 - 負担割合は、カテゴリごとに全ユーザーの合計が100%になるように設定する必要があります。
 - 収入は、どのカテゴリの支出にも登録できます。
 - 個人分の合計は、支出総額を超えて登録できません。

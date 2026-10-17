@@ -6,6 +6,8 @@ import Setting from "../pages/Setting";
 import Summary from "../pages/Summary";
 import CashFlowForecast from "../pages/CashFlowForecast";
 import Login from "../pages/Login";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
 import Register from "../pages/Register";
 import Family from "../pages/Family";
 import Manual from "../pages/Manual";
@@ -34,6 +36,8 @@ const AppRoutes = () => {
     return (
         <Routes>
             <Route path={ROUTES.LOGIN} element={<Login />}></Route>
+            <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword />}></Route>
+            <Route path={ROUTES.RESET_PASSWORD} element={<ResetPassword />}></Route>
             <Route path={ROUTES.REGISTER} element={<Register />}></Route>
             <Route path={ROUTES.INDEX} element={<ProtectedRoute><Index /></ProtectedRoute>}></Route>
             <Route path={ROUTES.CATEGORY} element={<ProtectedRoute><Category /></ProtectedRoute>}></Route>

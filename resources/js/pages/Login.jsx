@@ -61,6 +61,7 @@ const Login = () => {
                     <input
                         name="email"
                         type="email"
+                        autoComplete="username"
                         value={form.email}
                         onChange={changeForm}
                     />
@@ -71,6 +72,7 @@ const Login = () => {
                     <input
                         name="password"
                         type="password"
+                        autoComplete="current-password"
                         value={form.password}
                         onChange={changeForm}
                     />
@@ -86,6 +88,8 @@ const Login = () => {
                 </label>
 
                 <button type="submit">ログイン</button>
+
+                <p><Link to={ROUTES.FORGOT_PASSWORD}>パスワードをお忘れの方</Link></p>
 
                 <p>
                     アカウントがない場合は

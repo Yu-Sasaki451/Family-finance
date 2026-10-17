@@ -1,0 +1,28 @@
+{
+    "$schema": "./node_modules/wrangler/config-schema.json",
+    "name": "family-finance",
+    "main": "./worker/index.js",
+    "compatibility_date": "2026-08-26",
+    "vars": {
+        "APP_URL": "https://family-finance.uyu727.workers.dev"
+    },
+    "assets": {
+        "directory": "./dist",
+        "binding": "ASSETS",
+        "not_found_handling": "single-page-application",
+        "run_worker_first": [
+            "/api/*",
+            "/index.php",
+            "/.htaccess",
+            "/build/*"
+        ]
+    },
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "family-finance",
+            "database_id": "dbb85596-13d6-4982-a9fd-914454a36055",
+            "migrations_dir": "d1/migrations"
+        }
+    ]
+}

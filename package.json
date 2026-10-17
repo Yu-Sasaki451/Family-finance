@@ -3,15 +3,22 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "worker:dev": "npx wrangler dev",
+        "d1:migrate:local": "npx wrangler d1 migrations apply family-finance --local",
+        "d1:migrate:remote": "npx wrangler d1 migrations apply family-finance --remote",
+        "deploy": "npm run build && npx wrangler deploy",
+        "test:worker": "node --test tests/worker/*.test.mjs",
+        "password:reset-link": "node tools/create-password-reset-link.mjs"
     },
     "devDependencies": {
         "@vitejs/plugin-react": "^4.7.0",
         "axios": "^1.6.4",
-        "laravel-vite-plugin": "^1.0.0",
-        "vite": "^5.0.0"
+        "vite": "^5.0.0",
+        "wrangler": "^4.126.0"
     },
     "dependencies": {
+        "bcryptjs": "^3.0.3",
         "react": "^19.2.6",
         "react-dom": "^19.2.6",
         "react-router-dom": "^7.15.1"

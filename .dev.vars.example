@@ -1,0 +1,3 @@
+# ローカルのメール配信テスト用。値を入れた .dev.vars はGitへ登録しません。
+RESEND_API_KEY=
+PASSWORD_RESET_FROM=

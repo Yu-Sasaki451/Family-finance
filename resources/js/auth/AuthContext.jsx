@@ -30,13 +30,17 @@ export const AuthProvider = ({ children }) => {
         applyAuth(response.data);
     };
 
+    const clearAuth = () => {
+        setAuthToken(null);
+        setUser(null);
+        setFamily(null);
+    };
+
     const logout = async () => {
         try {
             await axios.post("/api/auth/logout");
         } finally {
-            setAuthToken(null);
-            setUser(null);
-            setFamily(null);
+            clearAuth();
         }
     };
 
@@ -80,6 +84,7 @@ export const AuthProvider = ({ children }) => {
                 register,
                 login,
                 logout,
+                clearAuth,
                 updateFamily,
                 isAuthenticated: Boolean(user),
             }}
